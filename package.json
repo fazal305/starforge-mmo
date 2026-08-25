@@ -1,0 +1,15 @@
+{
+  "name": "starforge-mmo",
+  "private": true,
+  "version": "0.0.1",
+  "description": "STARFORGE — real-time multiplayer space strategy MMO",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter @starforge/web dev",
+    "dev:server": "pnpm --filter @starforge/server dev",
+    "build": "pnpm --filter @starforge/web build",
+    "test": "pnpm -r test"
+  }
+}

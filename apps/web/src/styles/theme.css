@@ -1,0 +1,75 @@
+/* STARFORGE design system — single source of truth for visual tokens.
+   Components must reference these variables, never hard-coded values. */
+
+:root {
+  /* Surfaces */
+  --color-background: #05070b;
+  --color-surface: #0b0f16;
+  --color-surface-elevated: #121826;
+  --color-border: #232c3d;
+  --color-border-strong: #34405a;
+
+  /* Text */
+  --color-text-primary: #e8ecf4;
+  --color-text-secondary: #8a94a8;
+  --color-text-tertiary: #5b6478;
+
+  /* Accent & semantic */
+  --color-accent: #4da8ff;
+  --color-accent-dim: #1f4a75;
+  --color-danger: #e2554a;
+  --color-success: #3fbf7f;
+  --color-warning: #d9a441;
+
+  /* Empire colors (assignable, not decorative) */
+  --color-empire-1: #4da8ff;
+  --color-empire-2: #e2554a;
+  --color-empire-3: #3fbf7f;
+  --color-empire-4: #d9a441;
+  --color-empire-5: #b479e0;
+
+  /* Typography */
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.75rem;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+
+  /* Radii — kept small; this is a strategy HUD, not a consumer app */
+  --radius-sm: 3px;
+  --radius-md: 5px;
+
+  /* Shadows */
+  --shadow-panel: 0 4px 24px rgba(0, 0, 0, 0.5);
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-base: 220ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Map / HUD specific */
+  --map-grid-line: rgba(90, 110, 140, 0.12);
+  --panel-opacity: 0.94;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}
