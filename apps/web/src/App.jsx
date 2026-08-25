@@ -1,4 +1,5 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useMediaQuery } from "./hooks/useMediaQuery";
 import { useConnectionStore } from "./stores/connectionStore";
 import { useUniverseStore } from "./stores/universeStore";
 import { useAuthStore } from "./stores/authStore";
@@ -19,6 +20,9 @@ import ChatPanel from "./components/ChatPanel";
 import PresenceIndicator from "./components/PresenceIndicator";
 import BattleLogPanel from "./components/BattleLogPanel";
 import BattleNotifications from "./components/BattleNotifications";
+import OnboardingHint from "./components/OnboardingHint";
+import { sound } from "./audio/sound";
+import { useAudioStore } from "./stores/audioStore";
 
 function ConnectionBadge() {
   const status = useConnectionStore((s) => s.status);
@@ -32,6 +36,8 @@ function ConnectionBadge() {
 
   return (
     <span
+      role="status"
+      aria-live="polite"
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -50,6 +56,32 @@ function ConnectionBadge() {
   );
 }
 
+function MuteToggle() {
+  const muted = useAudioStore((s) => s.muted);
+  const toggleMuted = useAudioStore((s) => s.toggleMuted);
+  return (
+    <button
+      type="button"
+      onClick={toggleMuted}
+      aria-pressed={muted}
+      aria-label={muted ? "Unmute sound" : "Mute sound"}
+      title={muted ? "Unmute sound" : "Mute sound"}
+      style={{
+        background: "transparent",
+        border: "1px solid var(--color-border-strong)",
+        color: "var(--color-text-secondary)",
+        borderRadius: "var(--radius-sm)",
+        padding: "var(--space-1) var(--space-2)",
+        fontFamily: "var(--font-mono)",
+        fontSize: "var(--font-size-xs)",
+        cursor: "pointer",
+      }}
+    >
+      {muted ? "Muted" : "Sound on"}
+    </button>
+  );
+}
+
 function GameShell({ token }) {
   const debugOverlayVisible = useUniverseStore((s) => s.debugOverlayVisible);
   const toggleDebugOverlay = useUniverseStore((s) => s.toggleDebugOverlay);
@@ -61,6 +93,8 @@ function GameShell({ token }) {
   const resetPresence = usePresenceStore((s) => s.reset);
   const resetChat = useChatStore((s) => s.reset);
   const resetBattles = useBattleStore((s) => s.reset);
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const [panelsOpen, setPanelsOpen] = useState(false);
 
   // Shared by the initial load and by reconnect: WS events missed while
   // offline are gone for good, so a reconnect re-fetches a fresh snapshot
@@ -75,6 +109,13 @@ function GameShell({ token }) {
   }, [token, hydrateEmpire, hydrateWorld]);
 
   const send = useGameSession(token, loadSnapshot);
+  const sendWithSound = useCallback(
+    (command) => {
+      sound.click();
+      return send(command);
+    },
+    [send],
+  );
 
   useEffect(() => {
     loadSnapshot();
@@ -100,30 +141,52 @@ function GameShell({ token }) {
           borderBottom: "1px solid var(--color-border)",
           background: "var(--color-surface)",
           gap: "var(--space-5)",
+          flexWrap: isMobile ? "wrap" : "nowrap",
         }}
       >
         <strong style={{ letterSpacing: "0.08em", flexShrink: 0 }}>STARFORGE</strong>
-        <EmpireBar />
+        {!isMobile && <EmpireBar />}
         <div style={{ display: "flex", alignItems: "center", gap: "var(--space-4)", flexShrink: 0 }}>
-          <button
-            type="button"
-            onClick={toggleDebugOverlay}
-            aria-pressed={debugOverlayVisible}
-            style={{
-              background: "transparent",
-              border: "1px solid var(--color-border-strong)",
-              color: "var(--color-text-secondary)",
-              borderRadius: "var(--radius-sm)",
-              padding: "var(--space-1) var(--space-2)",
-              fontFamily: "var(--font-mono)",
-              fontSize: "var(--font-size-xs)",
-              cursor: "pointer",
-            }}
-          >
-            Debug {debugOverlayVisible ? "on" : "off"}
-          </button>
-          <PresenceIndicator />
+          {!isMobile && (
+            <button
+              type="button"
+              onClick={toggleDebugOverlay}
+              aria-pressed={debugOverlayVisible}
+              style={{
+                background: "transparent",
+                border: "1px solid var(--color-border-strong)",
+                color: "var(--color-text-secondary)",
+                borderRadius: "var(--radius-sm)",
+                padding: "var(--space-1) var(--space-2)",
+                fontFamily: "var(--font-mono)",
+                fontSize: "var(--font-size-xs)",
+                cursor: "pointer",
+              }}
+            >
+              Debug {debugOverlayVisible ? "on" : "off"}
+            </button>
+          )}
+          {!isMobile && <PresenceIndicator />}
+          <MuteToggle />
           <ConnectionBadge />
+          {isMobile && (
+            <button
+              type="button"
+              onClick={() => setPanelsOpen(true)}
+              style={{
+                background: "var(--color-accent-dim)",
+                border: "1px solid var(--color-border-strong)",
+                color: "var(--color-text-primary)",
+                borderRadius: "var(--radius-sm)",
+                padding: "var(--space-1) var(--space-2)",
+                fontFamily: "var(--font-mono)",
+                fontSize: "var(--font-size-xs)",
+                cursor: "pointer",
+              }}
+            >
+              Panels
+            </button>
+          )}
           <button
             type="button"
             onClick={handleLogout}
@@ -141,31 +204,80 @@ function GameShell({ token }) {
             Log out
           </button>
         </div>
+        {isMobile && <EmpireBar />}
       </header>
       <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
-        <UniverseMap debugOverlayVisible={debugOverlayVisible} send={send} />
+        <UniverseMap debugOverlayVisible={debugOverlayVisible} send={sendWithSound} />
         <BattleNotifications />
-        <aside
-          style={{
-            width: 280,
-            borderLeft: "1px solid var(--color-border)",
-            background: "var(--color-surface)",
-            fontFamily: "var(--font-body)",
-            fontSize: "var(--font-size-sm)",
-            color: "var(--color-text-secondary)",
-            display: "flex",
-            flexDirection: "column",
-            minHeight: 0,
-          }}
-        >
-          <div style={{ flex: 1, overflowY: "auto", padding: "var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
-            <ColonyPanel send={send} />
-            <FleetPanel send={send} />
-            <ResearchPanel send={send} />
-            <BattleLogPanel />
-          </div>
-          <ChatPanel send={send} />
-        </aside>
+        <OnboardingHint />
+        {(!isMobile || panelsOpen) && (
+          <aside
+            style={
+              isMobile
+                ? {
+                    position: "absolute",
+                    inset: 0,
+                    background: "var(--color-surface)",
+                    zIndex: 20,
+                    display: "flex",
+                    flexDirection: "column",
+                    minHeight: 0,
+                  }
+                : {
+                    width: 280,
+                    borderLeft: "1px solid var(--color-border)",
+                    background: "var(--color-surface)",
+                    fontFamily: "var(--font-body)",
+                    fontSize: "var(--font-size-sm)",
+                    color: "var(--color-text-secondary)",
+                    display: "flex",
+                    flexDirection: "column",
+                    minHeight: 0,
+                  }
+            }
+          >
+            {isMobile && (
+              <button
+                type="button"
+                onClick={() => setPanelsOpen(false)}
+                aria-label="Close panels"
+                style={{
+                  alignSelf: "flex-end",
+                  margin: "var(--space-3)",
+                  background: "transparent",
+                  border: "1px solid var(--color-border-strong)",
+                  color: "var(--color-text-secondary)",
+                  borderRadius: "var(--radius-sm)",
+                  padding: "var(--space-2) var(--space-3)",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "var(--font-size-xs)",
+                  cursor: "pointer",
+                }}
+              >
+                ✕ Close
+              </button>
+            )}
+            <div
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                padding: "var(--space-4)",
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--font-size-sm)",
+                color: "var(--color-text-secondary)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "var(--space-5)",
+              }}
+            >
+              <ColonyPanel send={sendWithSound} />
+              <FleetPanel send={sendWithSound} />
+              <ResearchPanel send={sendWithSound} />
+              <BattleLogPanel />
+            </div>
+            <ChatPanel send={sendWithSound} />
+          </aside>
+        )}
       </div>
     </div>
   );

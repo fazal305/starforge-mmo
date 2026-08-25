@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useBattleStore } from "../stores/battleStore.js";
 import { useWorldStore } from "../stores/worldStore.js";
 import { useEmpireStore } from "../stores/empireStore.js";
+import { sound } from "../audio/sound.js";
 
 const AUTO_DISMISS_MS = 6000;
 
@@ -19,6 +20,8 @@ export default function BattleNotifications() {
 
     lastSeenBattleId.current = latest.battleId;
     setVisible(latest);
+    if (latest.winnerEmpireId === myEmpireId) sound.combatWin();
+    else sound.combatLoss();
     const timer = setTimeout(() => setVisible(null), AUTO_DISMISS_MS);
     return () => clearTimeout(timer);
   }, [battles, myEmpireId]);

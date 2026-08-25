@@ -6,6 +6,7 @@ import { useWorldStore, ensureEmpireInfo } from "../stores/worldStore.js";
 import { usePresenceStore } from "../stores/presenceStore.js";
 import { useChatStore } from "../stores/chatStore.js";
 import { useBattleStore } from "../stores/battleStore.js";
+import { sound } from "../audio/sound.js";
 
 const WS_URL = import.meta.env.VITE_WS_URL ?? "ws://localhost:4000/ws";
 
@@ -23,6 +24,8 @@ export function useGameSession(token, onReconnected) {
   const socketRef = useRef(null);
   const hasConnectedOnceRef = useRef(false);
   const setStatus = useConnectionStore((s) => s.setStatus);
+  const setLatency = useConnectionStore((s) => s.setLatency);
+  const setTick = useConnectionStore((s) => s.setTick);
   const applyResourceUpdate = useEmpireStore((s) => s.applyResourceUpdate);
   const applyResearchUpdate = useEmpireStore((s) => s.applyResearchUpdate);
   const applyColonyUpdate = useWorldStore((s) => s.applyColonyUpdate);
@@ -49,19 +52,27 @@ export function useGameSession(token, onReconnected) {
         }
       },
       onEvent: (event) => {
-        if (event.type === "RESOURCE_UPDATED") applyResourceUpdate(event.payload);
+        if (event.type === "WORLD_TICK") {
+          setLatency(Math.max(0, Date.now() - event.payload.serverTime));
+          setTick(event.payload.tick);
+        } else if (event.type === "RESOURCE_UPDATED") applyResourceUpdate(event.payload);
         else if (event.type === "RESEARCH_UPDATED") applyResearchUpdate(event.payload);
         else if (event.type === "COLONY_UPDATED") {
+          const isNewColony = !useWorldStore.getState().colonies.some((c) => c.id === event.payload.id);
           applyColonyUpdate(event.payload);
           ensureEmpireInfo(event.payload.empireId);
+          if (isNewColony) sound.discovery();
         } else if (event.type === "FLEET_UPDATED") {
           applyFleetUpdate(event.payload);
           ensureEmpireInfo(event.payload.empireId);
         } else if (event.type === "PLAYER_JOINED") addPlayer(event.payload.playerId, event.payload.username);
         else if (event.type === "PLAYER_LEFT") removePlayer(event.payload.playerId);
-        else if (event.type === "CHAT_MESSAGE") addChatMessage(event.payload);
+        else if (event.type === "CHAT_MESSAGE") {
+          addChatMessage(event.payload);
+          sound.notification();
+        }
         else if (event.type === "COMBAT_RESOLVED") addBattle(event.payload);
-        // WORLD_TICK / COMMAND_ACK land elsewhere.
+        // COMMAND_ACK lands elsewhere (the send() caller, if it needs it).
       },
     });
     socketRef.current = socket;
@@ -74,6 +85,8 @@ export function useGameSession(token, onReconnected) {
   }, [
     token,
     setStatus,
+    setLatency,
+    setTick,
     onReconnected,
     applyResourceUpdate,
     applyResearchUpdate,

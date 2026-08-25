@@ -6,9 +6,10 @@ compete for territory — with the server holding sole authority over
 everything that matters.
 
 This repository is built in phases (see [Roadmap](#roadmap) below).
-Auth, the universe map, empire economy, fleets, live multiplayer
-(shared territory, presence, chat), and fleet combat are all playable
-now; only polish (Phase 7) remains.
+All seven phases are complete: auth, the universe map, empire economy,
+fleets, live multiplayer (shared territory, presence, chat), fleet
+combat, and a polish pass (sound, accessibility, mobile layout,
+extended debug overlay, onboarding, error handling).
 
 ## Architecture
 
@@ -145,7 +146,7 @@ Steps will be documented here when that phase runs.
 - [x] **Phase 4 — Fleets**: movement, interpolation, server-authoritative commands
 - [x] **Phase 5 — Multiplayer**: live sync across multiple players, chat, reconnect
 - [x] **Phase 6 — Combat**: server-side resolution, battle logs
-- [ ] **Phase 7 — Polish**: performance overlay, accessibility, sound, onboarding
+- [x] **Phase 7 — Polish**: performance overlay, accessibility, sound, onboarding
 
 ## Performance considerations
 
@@ -153,3 +154,21 @@ The universe can contain thousands of star systems and ships. React will
 not mount them directly — Phase 2 introduces canvas-based rendering with
 viewport virtualization and spatial partitioning so only what's on-screen
 is ever rendered, regardless of universe size.
+
+## Polish
+
+- **Debug overlay** (header "Debug" toggle, off by default): FPS, visible
+  systems, cached sectors, total fleets in the universe, server tick,
+  round-trip latency estimate, players online, your empire ID.
+- **Sound**: short synthesized tones via the Web Audio API for
+  selection/clicks/notifications/discovery/combat — no audio files, so
+  nothing to license. Muted state persists across sessions (header toggle).
+- **Accessibility**: keyboard control of the map (arrow keys pan, +/-
+  zoom, Esc cancels a fleet move order), ARIA roles/labels/live regions
+  on chat, connection status, and battle notifications, visible focus
+  states, and durations that zero out under `prefers-reduced-motion`.
+- **Mobile**: below 768px the sidebar becomes a full-screen "Panels"
+  drawer instead of a fixed column, keeping the map the primary surface.
+- **Errors**: a top-level error boundary shows a recovery screen instead
+  of a blank crash; a dismissible onboarding hint walks new players
+  through the core loop once.

@@ -7,7 +7,10 @@ import { useUniverseStore } from "../stores/universeStore.js";
 import { useFleetStore, interpolateFleetPosition } from "../stores/fleetStore.js";
 import { useWorldStore } from "../stores/worldStore.js";
 import { useEmpireStore } from "../stores/empireStore.js";
+import { useConnectionStore } from "../stores/connectionStore.js";
+import { usePresenceStore } from "../stores/presenceStore.js";
 import { moveFleet } from "../websocket/commands.js";
+import { sound } from "../audio/sound.js";
 
 const DRAG_THRESHOLD_PX = 4;
 const STATS_UPDATE_INTERVAL_MS = 500;
@@ -33,6 +36,11 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
 
   const setSelectedSystem = useUniverseStore((s) => s.setSelectedSystem);
   const setHoveredSystem = useUniverseStore((s) => s.setHoveredSystem);
+  const latencyMs = useConnectionStore((s) => s.latencyMs);
+  const tick = useConnectionStore((s) => s.tick);
+  const onlineCount = usePresenceStore((s) => Object.keys(s.players).length);
+  const totalFleets = useWorldStore((s) => s.fleets.length);
+  const myEmpireIdForOverlay = useEmpireStore((s) => s.empire?.id);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -175,6 +183,7 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
         const { systems } = cacheRef.current.getVisible(bounds);
         const hit = pickSystemAtScreenPoint(cameraRef.current, width, height, systems, x, y);
         setSelectedSystem(hit ?? null);
+        if (hit) sound.select();
       }
       pointerStateRef.current = { dragging: false, moved: false, lastX: 0, lastY: 0 };
     };
@@ -188,11 +197,51 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
       cameraRef.current.zoomAt(x, y, factor, width, height);
     };
 
+    // Keyboard alternative to drag/scroll, since the map is role="application"
+    // and must be operable without a pointer: arrows pan, +/- zoom, Esc cancels a move order.
+    const handleKeyDown = (e) => {
+      const PAN_STEP = 60;
+      const camera = cameraRef.current;
+      switch (e.key) {
+        case "ArrowUp":
+          camera.panByScreenDelta(0, PAN_STEP);
+          e.preventDefault();
+          break;
+        case "ArrowDown":
+          camera.panByScreenDelta(0, -PAN_STEP);
+          e.preventDefault();
+          break;
+        case "ArrowLeft":
+          camera.panByScreenDelta(PAN_STEP, 0);
+          e.preventDefault();
+          break;
+        case "ArrowRight":
+          camera.panByScreenDelta(-PAN_STEP, 0);
+          e.preventDefault();
+          break;
+        case "+":
+        case "=":
+          camera.zoomAt(width / 2, height / 2, 1.15, width, height);
+          e.preventDefault();
+          break;
+        case "-":
+          camera.zoomAt(width / 2, height / 2, 1 / 1.15, width, height);
+          e.preventDefault();
+          break;
+        case "Escape":
+          useFleetStore.getState().cancelMoveOrder();
+          break;
+        default:
+          break;
+      }
+    };
+
     canvas.addEventListener("pointerdown", handlePointerDown);
     canvas.addEventListener("pointermove", handlePointerMove);
     canvas.addEventListener("pointerup", handlePointerUp);
     canvas.addEventListener("pointercancel", handlePointerUp);
     canvas.addEventListener("wheel", handleWheel, { passive: false });
+    canvas.addEventListener("keydown", handleKeyDown);
 
     return () => {
       cancelAnimationFrame(rafId);
@@ -202,6 +251,7 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
       canvas.removeEventListener("pointerup", handlePointerUp);
       canvas.removeEventListener("pointercancel", handlePointerUp);
       canvas.removeEventListener("wheel", handleWheel);
+      canvas.removeEventListener("keydown", handleKeyDown);
     };
   }, [setSelectedSystem, setHoveredSystem, send]);
 
@@ -210,7 +260,8 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
       <canvas
         ref={canvasRef}
         role="application"
-        aria-label="Universe map — drag to pan, scroll to zoom, click a system to select it"
+        tabIndex={0}
+        aria-label="Universe map. Drag to pan, scroll to zoom, click a system to select it. Keyboard: arrow keys pan, plus/minus zoom, escape cancels a fleet move order."
         style={{ display: "block", cursor: "grab", touchAction: "none" }}
       />
       {debugOverlayVisible && (
@@ -233,6 +284,11 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
           <div>FPS: {stats.fps}</div>
           <div>Visible systems: {stats.visibleSystems}</div>
           <div>Cached sectors: {stats.cachedSectors}</div>
+          <div>Total fleets (universe): {totalFleets}</div>
+          <div>Server tick: {tick}</div>
+          <div>Latency: {latencyMs === null ? "—" : `${latencyMs}ms`}</div>
+          <div>Players online: {onlineCount}</div>
+          <div>Empire: {myEmpireIdForOverlay ? myEmpireIdForOverlay.slice(0, 8) : "—"}</div>
         </div>
       )}
     </div>
