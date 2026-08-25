@@ -1,5 +1,6 @@
 import { RESEARCH_CATALOG } from "@starforge/shared";
 import { useEmpireStore } from "../stores/empireStore.js";
+import { useConnectionStore } from "../stores/connectionStore.js";
 import { startResearch } from "../websocket/commands.js";
 
 const panelHeading = {
@@ -14,6 +15,7 @@ const panelHeading = {
 
 export default function ResearchPanel({ send }) {
   const research = useEmpireStore((s) => s.research);
+  const connected = useConnectionStore((s) => s.status === "CONNECTED");
   const byId = new Map(research.map((r) => [r.technologyId, r]));
 
   return (
@@ -50,7 +52,7 @@ export default function ResearchPanel({ send }) {
                 </span>
               ) : (
                 <button
-                  disabled={!prereqMet}
+                  disabled={!prereqMet || !connected}
                   onClick={() => send(startResearch(tech.id))}
                   style={{
                     background: "transparent",
@@ -58,7 +60,7 @@ export default function ResearchPanel({ send }) {
                     color: prereqMet ? "var(--color-accent)" : "var(--color-text-tertiary)",
                     borderRadius: "var(--radius-sm)",
                     padding: "2px var(--space-2)",
-                    cursor: prereqMet ? "pointer" : "not-allowed",
+                    cursor: prereqMet && connected ? "pointer" : "not-allowed",
                     fontSize: "var(--font-size-xs)",
                   }}
                 >

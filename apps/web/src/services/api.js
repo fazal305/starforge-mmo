@@ -23,3 +23,11 @@ export function login({ username, password }) {
 export function fetchEmpire(token) {
   return request("/empire", { headers: { Authorization: `Bearer ${token}` } });
 }
+
+export function fetchUniverseActive(token) {
+  return request("/universe/active", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function fetchPublicEmpire(token, empireId) {
+  return request(`/universe/empires/${empireId}`, { headers: { Authorization: `Bearer ${token}` } });
+}

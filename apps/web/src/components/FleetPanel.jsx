@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { SHIP_TYPES } from "@starforge/shared";
 import { useEmpireStore } from "../stores/empireStore.js";
+import { useWorldStore } from "../stores/worldStore.js";
 import { useFleetStore } from "../stores/fleetStore.js";
+import { useConnectionStore } from "../stores/connectionStore.js";
 import { createFleet } from "../websocket/commands.js";
 
 const panelHeading = {
@@ -30,17 +32,21 @@ function shipyardColony(colonies) {
 }
 
 export default function FleetPanel({ send }) {
-  const colonies = useEmpireStore((s) => s.colonies);
-  const fleets = useFleetStore((s) => s.fleets);
+  const myEmpireId = useEmpireStore((s) => s.empire?.id);
+  const allColonies = useWorldStore((s) => s.colonies);
+  const allFleets = useWorldStore((s) => s.fleets);
   const selectedFleetId = useFleetStore((s) => s.selectedFleetId);
   const awaitingMoveOrder = useFleetStore((s) => s.awaitingMoveOrder);
   const selectFleet = useFleetStore((s) => s.selectFleet);
   const beginMoveOrder = useFleetStore((s) => s.beginMoveOrder);
   const cancelMoveOrder = useFleetStore((s) => s.cancelMoveOrder);
+  const connected = useConnectionStore((s) => s.status === "CONNECTED");
   const [hullType, setHullType] = useState("scout");
   const [count, setCount] = useState(1);
 
-  const colony = shipyardColony(colonies);
+  const myColonies = allColonies.filter((c) => c.empireId === myEmpireId);
+  const fleets = allFleets.filter((f) => f.empireId === myEmpireId);
+  const colony = shipyardColony(myColonies);
 
   return (
     <div>
@@ -67,7 +73,7 @@ export default function FleetPanel({ send }) {
             onChange={(e) => setCount(Math.max(1, Math.min(50, Number(e.target.value))))}
             style={{ width: 48, background: "var(--color-surface-elevated)", color: "var(--color-text-primary)", border: "1px solid var(--color-border-strong)", borderRadius: "var(--radius-sm)", padding: "var(--space-1)" }}
           />
-          <button style={buttonStyle} onClick={() => send(createFleet(colony.id, hullType, count))}>
+          <button style={buttonStyle} disabled={!connected} onClick={() => send(createFleet(colony.id, hullType, count))}>
             Build
           </button>
         </div>
@@ -112,7 +118,7 @@ export default function FleetPanel({ send }) {
                     Cancel (click map to set destination)
                   </button>
                 ) : (
-                  <button style={buttonStyle} onClick={(e) => { e.stopPropagation(); beginMoveOrder(); }}>
+                  <button style={buttonStyle} disabled={!connected} onClick={(e) => { e.stopPropagation(); beginMoveOrder(); }}>
                     Move fleet…
                   </button>
                 )}

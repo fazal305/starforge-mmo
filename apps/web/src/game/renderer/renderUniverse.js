@@ -67,7 +67,7 @@ function drawFleet(ctx, camera, viewportW, viewportH, fleet, colors) {
   ctx.lineTo(size * 0.7, size * 0.7);
   ctx.lineTo(-size * 0.7, size * 0.7);
   ctx.closePath();
-  ctx.fillStyle = fleet.selected ? colors.accent : "#d7dce6";
+  ctx.fillStyle = fleet.color ?? (fleet.selected ? colors.accent : "#d7dce6");
   ctx.fill();
   if (fleet.selected) {
     ctx.strokeStyle = colors.accent;

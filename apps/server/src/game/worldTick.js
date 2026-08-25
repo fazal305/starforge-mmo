@@ -86,7 +86,7 @@ async function applyProduction(productionByEmpire, empireIdToUserId) {
   }
 }
 
-async function processArrivedFleets(now, empireIdToUserId) {
+async function processArrivedFleets(now) {
   const arrived = await db
     .select()
     .from(fleets)
@@ -109,22 +109,21 @@ async function processArrivedFleets(now, empireIdToUserId) {
       })
       .where(eq(fleets.id, fleet.id));
 
-    const userId = empireIdToUserId.get(fleet.empireId);
-    if (userId) {
-      sendTo(userId, {
-        type: "FLEET_UPDATED",
-        serverTime: Date.now(),
-        payload: {
-          id: fleet.id,
-          empireId: fleet.empireId,
-          position: { x: fleet.destinationX, y: fleet.destinationY },
-          destination: null,
-          departedAt: null,
-          etaMs: null,
-          status: "IDLE",
-        },
-      });
-    }
+    // Fleet position/status is public territory information — every
+    // connected player sees it, not just the owner.
+    broadcast({
+      type: "FLEET_UPDATED",
+      serverTime: Date.now(),
+      payload: {
+        id: fleet.id,
+        empireId: fleet.empireId,
+        position: { x: fleet.destinationX, y: fleet.destinationY },
+        destination: null,
+        departedAt: null,
+        etaMs: null,
+        status: "IDLE",
+      },
+    });
   }
 }
 
@@ -170,23 +169,20 @@ async function runTick() {
   const { productionByEmpire, buildingsByColony } = await computeProductionAndActiveBuildings();
   await applyProduction(productionByEmpire, empireIdToUserId);
   await advanceResearch(productionByEmpire, empireIdToUserId);
-  await processArrivedFleets(now, empireIdToUserId);
+  await processArrivedFleets(now);
 
-  if (completing.length > 0) {
-    for (const row of completing) {
-      const userId = empireIdToUserId.get(row.empireId);
-      if (!userId) continue;
-      sendTo(userId, {
-        type: "COLONY_UPDATED",
-        serverTime: Date.now(),
-        payload: {
-          id: row.colonyId,
-          empireId: row.empireId,
-          planetId: "", // client already knows its own colonies' planetIds; this event is a buildings refresh
-          buildings: buildingsByColony.get(row.colonyId) ?? [],
-        },
-      });
-    }
+  // Public: a colony's buildings are visible territory information.
+  for (const row of completing) {
+    broadcast({
+      type: "COLONY_UPDATED",
+      serverTime: Date.now(),
+      payload: {
+        id: row.colonyId,
+        empireId: row.empireId,
+        planetId: "", // a client seeing this colony for the first time gets its planetId from GET /universe/active
+        buildings: buildingsByColony.get(row.colonyId) ?? [],
+      },
+    });
   }
 }
 

@@ -6,8 +6,9 @@ compete for territory — with the server holding sole authority over
 everything that matters.
 
 This repository is built in phases (see [Roadmap](#roadmap) below).
-Auth, the universe map, empire economy, and fleets are playable now;
-multiplayer sync and combat are still to come.
+Auth, the universe map, empire economy, fleets, and live multiplayer
+(shared territory, presence, chat) are playable now; combat is still
+to come.
 
 ## Architecture
 
@@ -42,11 +43,19 @@ flowchart LR
 
 **Server-authoritative by design.** The client never mutates resources,
 ownership, or combat outcomes directly — it sends a `Command`, the server
-validates it against the current DB state, and broadcasts the resulting
-`Event`(s) to affected clients. `packages/shared` holds Zod schemas for
-every command and event so the wire contract can't drift between the two
-sides — validated at runtime since this project uses plain JavaScript,
-not TypeScript.
+validates it against the current DB state, and turns the result into
+`Event`(s). `packages/shared` holds Zod schemas for every command and
+event so the wire contract can't drift between the two sides — validated
+at runtime since this project uses plain JavaScript, not TypeScript.
+
+**Two kinds of state, two delivery rules.** Territory — colonies,
+buildings, fleets, chat, presence — is public: broadcast to every
+connected player, because it's what makes the universe shared. Resources
+and research progress are private: sent only to the owning connection,
+never to rivals. The client mirrors this split — `worldStore` holds
+everyone's visible territory, `empireStore` holds only your own economy —
+and the one place the routing decision is made is `commandDispatcher.js`
+on the server, so no individual command handler can get it wrong.
 
 ## Monorepo layout
 
@@ -133,7 +142,7 @@ Steps will be documented here when that phase runs.
 - [x] **Phase 2 — Universe**: deterministic generation, camera, viewport virtualization
 - [x] **Phase 3 — Player Empire**: resources, colonies, buildings, research
 - [x] **Phase 4 — Fleets**: movement, interpolation, server-authoritative commands
-- [ ] **Phase 5 — Multiplayer**: live sync across multiple players, chat, reconnect
+- [x] **Phase 5 — Multiplayer**: live sync across multiple players, chat, reconnect
 - [ ] **Phase 6 — Combat**: server-side resolution, battle logs
 - [ ] **Phase 7 — Polish**: performance overlay, accessibility, sound, onboarding
 

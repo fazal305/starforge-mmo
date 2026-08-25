@@ -1,26 +1,15 @@
 import { create } from "zustand";
 
+/** UI-only fleet selection/move-order state. Fleet data itself lives in worldStore (shared, multiplayer-visible). */
 export const useFleetStore = create((set) => ({
-  fleets: [],
   selectedFleetId: null,
   awaitingMoveOrder: false,
-
-  hydrate: (fleets) => set({ fleets }),
-
-  applyFleetUpdate: (payload) =>
-    set((s) => {
-      const idx = s.fleets.findIndex((f) => f.id === payload.id);
-      if (idx === -1) return { fleets: [...s.fleets, { ...payload, ships: payload.ships ?? [] }] };
-      const fleets = [...s.fleets];
-      fleets[idx] = { ...fleets[idx], ...payload };
-      return { fleets };
-    }),
 
   selectFleet: (fleetId) => set({ selectedFleetId: fleetId, awaitingMoveOrder: false }),
   beginMoveOrder: () => set({ awaitingMoveOrder: true }),
   cancelMoveOrder: () => set({ awaitingMoveOrder: false }),
 
-  reset: () => set({ fleets: [], selectedFleetId: null, awaitingMoveOrder: false }),
+  reset: () => set({ selectedFleetId: null, awaitingMoveOrder: false }),
 }));
 
 /** Interpolated render position for a fleet at time `now` — never the raw server snapshot for a moving fleet. */

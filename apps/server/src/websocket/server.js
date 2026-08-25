@@ -54,8 +54,28 @@ export function createGameWebSocketServer(httpServer, onCommand) {
 
     /** @type {Connection} */
     const conn = { socket, userId: claims.userId, username: claims.username, isAlive: true };
+
+    // Back-fill the roster for the newcomer before anyone else's join event
+    // reaches them, so their presence list starts complete rather than
+    // growing one join at a time. Written straight to the raw socket —
+    // sendTo() looks the connection up in `connections`, and this one
+    // isn't registered there yet (that happens just below).
+    for (const existing of connections.values()) {
+      socket.send(
+        JSON.stringify({
+          type: "PLAYER_JOINED",
+          serverTime: Date.now(),
+          payload: { playerId: existing.userId, username: existing.username },
+        }),
+      );
+    }
+
     connections.set(claims.userId, conn);
-    broadcast({ type: "PLAYER_JOINED", serverTime: Date.now(), payload: { playerId: claims.userId } });
+    broadcast({
+      type: "PLAYER_JOINED",
+      serverTime: Date.now(),
+      payload: { playerId: claims.userId, username: claims.username },
+    });
 
     socket.on("pong", () => {
       conn.isAlive = true;
@@ -68,12 +88,16 @@ export function createGameWebSocketServer(httpServer, onCommand) {
       } catch {
         return; // malformed message: silently drop, never trust client input
       }
-      void onCommand(claims.userId, command);
+      void onCommand(claims.userId, command, claims.username);
     });
 
     socket.on("close", () => {
       connections.delete(claims.userId);
-      broadcast({ type: "PLAYER_LEFT", serverTime: Date.now(), payload: { playerId: claims.userId } });
+      broadcast({
+        type: "PLAYER_LEFT",
+        serverTime: Date.now(),
+        payload: { playerId: claims.userId, username: claims.username },
+      });
     });
   });
 

@@ -56,7 +56,7 @@ export const chatMessageEventSchema = envelope(
   z.object({ channel: z.string(), from: z.string(), text: z.string(), sentAt: z.number() }),
 );
 
-const playerPresencePayloadSchema = z.object({ playerId: z.string() });
+const playerPresencePayloadSchema = z.object({ playerId: z.string(), username: z.string() });
 export const playerJoinedEventSchema = envelope("PLAYER_JOINED", playerPresencePayloadSchema);
 export const playerLeftEventSchema = envelope("PLAYER_LEFT", playerPresencePayloadSchema);
 

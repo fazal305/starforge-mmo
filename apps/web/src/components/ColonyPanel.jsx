@@ -1,6 +1,8 @@
 import { BUILDING_TYPES } from "@starforge/shared";
 import { useUniverseStore } from "../stores/universeStore.js";
 import { useEmpireStore } from "../stores/empireStore.js";
+import { useWorldStore } from "../stores/worldStore.js";
+import { useConnectionStore } from "../stores/connectionStore.js";
 import { foundColony, buildStructure } from "../websocket/commands.js";
 
 const panelHeading = {
@@ -35,7 +37,10 @@ function formatCost(cost) {
 
 export default function ColonyPanel({ send }) {
   const selectedSystem = useUniverseStore((s) => s.selectedSystem);
-  const colonies = useEmpireStore((s) => s.colonies);
+  const myEmpireId = useEmpireStore((s) => s.empire?.id);
+  const colonies = useWorldStore((s) => s.colonies);
+  const empires = useWorldStore((s) => s.empires);
+  const connected = useConnectionStore((s) => s.status === "CONNECTED");
 
   if (!selectedSystem) {
     return <p style={{ margin: 0, color: "var(--color-text-secondary)" }}>Click a star on the map to select it.</p>;
@@ -43,6 +48,7 @@ export default function ColonyPanel({ send }) {
 
   const planetIds = selectedSystem.planets.map((p) => p.id);
   const colony = colonies.find((c) => planetIds.includes(c.planetId));
+  const isMine = colony && colony.empireId === myEmpireId;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
@@ -57,12 +63,24 @@ export default function ColonyPanel({ send }) {
       </div>
 
       {!colony && selectedSystem.planets.length > 0 && (
-        <button style={buttonStyle} onClick={() => send(foundColony(selectedSystem.planets[0].id))}>
+        <button style={buttonStyle} disabled={!connected} onClick={() => send(foundColony(selectedSystem.planets[0].id))}>
           Found colony on {selectedSystem.planets[0].id}
         </button>
       )}
 
-      {colony && (
+      {colony && !isMine && (
+        <div>
+          <h2 style={panelHeading}>Colony · {colony.planetId}</h2>
+          <p style={{ margin: 0, fontSize: "var(--font-size-xs)", color: "var(--color-text-secondary)" }}>
+            Held by{" "}
+            <span style={{ color: empires[colony.empireId]?.color ?? "var(--color-text-primary)" }}>
+              {empires[colony.empireId]?.name ?? "an unknown empire"}
+            </span>
+          </p>
+        </div>
+      )}
+
+      {colony && isMine && (
         <div>
           <h2 style={panelHeading}>Colony · {colony.planetId}</h2>
           <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "var(--space-2)", marginBottom: "var(--space-3)" }}>
@@ -81,7 +99,7 @@ export default function ColonyPanel({ send }) {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
             {Object.entries(BUILDING_TYPES).map(([type, def]) => (
-              <button key={type} style={buttonStyle} onClick={() => send(buildStructure(colony.id, type))}>
+              <button key={type} style={buttonStyle} disabled={!connected} onClick={() => send(buildStructure(colony.id, type))}>
                 Build {def.name} <span style={{ color: "var(--color-text-secondary)" }}>({formatCost(def.cost)})</span>
               </button>
             ))}

@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useConnectionStore } from "./stores/connectionStore";
 import { useUniverseStore } from "./stores/universeStore";
 import { useAuthStore } from "./stores/authStore";
 import { useEmpireStore } from "./stores/empireStore";
-import { useFleetStore } from "./stores/fleetStore";
-import { fetchEmpire } from "./services/api";
+import { useWorldStore } from "./stores/worldStore";
+import { usePresenceStore } from "./stores/presenceStore";
+import { useChatStore } from "./stores/chatStore";
+import { fetchEmpire, fetchUniverseActive } from "./services/api";
 import { useGameSession } from "./hooks/useGameSession";
 import UniverseMap from "./components/UniverseMap";
 import AuthScreen from "./components/AuthScreen";
@@ -12,6 +14,8 @@ import EmpireBar from "./components/EmpireBar";
 import ColonyPanel from "./components/ColonyPanel";
 import ResearchPanel from "./components/ResearchPanel";
 import FleetPanel from "./components/FleetPanel";
+import ChatPanel from "./components/ChatPanel";
+import PresenceIndicator from "./components/PresenceIndicator";
 
 function ConnectionBadge() {
   const status = useConnectionStore((s) => s.status);
@@ -46,25 +50,37 @@ function ConnectionBadge() {
 function GameShell({ token }) {
   const debugOverlayVisible = useUniverseStore((s) => s.debugOverlayVisible);
   const toggleDebugOverlay = useUniverseStore((s) => s.toggleDebugOverlay);
-  const hydrate = useEmpireStore((s) => s.hydrate);
+  const hydrateEmpire = useEmpireStore((s) => s.hydrate);
+  const hydrateWorld = useWorldStore((s) => s.hydrate);
   const logout = useAuthStore((s) => s.logout);
   const resetEmpire = useEmpireStore((s) => s.reset);
-  const hydrateFleets = useFleetStore((s) => s.hydrate);
-  const resetFleets = useFleetStore((s) => s.reset);
-  const send = useGameSession(token);
+  const resetWorld = useWorldStore((s) => s.reset);
+  const resetPresence = usePresenceStore((s) => s.reset);
+  const resetChat = useChatStore((s) => s.reset);
+
+  // Shared by the initial load and by reconnect: WS events missed while
+  // offline are gone for good, so a reconnect re-fetches a fresh snapshot
+  // rather than trusting whatever the client last knew.
+  const loadSnapshot = useCallback(() => {
+    Promise.all([fetchEmpire(token), fetchUniverseActive(token)])
+      .then(([empireData, universeData]) => {
+        hydrateEmpire({ empire: empireData.empire, research: empireData.research });
+        hydrateWorld(universeData);
+      })
+      .catch((err) => console.error("Failed to load game state:", err.message));
+  }, [token, hydrateEmpire, hydrateWorld]);
+
+  const send = useGameSession(token, loadSnapshot);
 
   useEffect(() => {
-    fetchEmpire(token)
-      .then(({ fleets, ...rest }) => {
-        hydrate(rest);
-        hydrateFleets(fleets ?? []);
-      })
-      .catch((err) => console.error("Failed to load empire:", err.message));
-  }, [token, hydrate, hydrateFleets]);
+    loadSnapshot();
+  }, [loadSnapshot]);
 
   const handleLogout = () => {
     resetEmpire();
-    resetFleets();
+    resetWorld();
+    resetPresence();
+    resetChat();
     logout();
   };
 
@@ -101,6 +117,7 @@ function GameShell({ token }) {
           >
             Debug {debugOverlayVisible ? "on" : "off"}
           </button>
+          <PresenceIndicator />
           <ConnectionBadge />
           <button
             type="button"
@@ -127,19 +144,20 @@ function GameShell({ token }) {
             width: 280,
             borderLeft: "1px solid var(--color-border)",
             background: "var(--color-surface)",
-            padding: "var(--space-4)",
             fontFamily: "var(--font-body)",
             fontSize: "var(--font-size-sm)",
             color: "var(--color-text-secondary)",
-            overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            gap: "var(--space-5)",
+            minHeight: 0,
           }}
         >
-          <ColonyPanel send={send} />
-          <FleetPanel send={send} />
-          <ResearchPanel send={send} />
+          <div style={{ flex: 1, overflowY: "auto", padding: "var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
+            <ColonyPanel send={send} />
+            <FleetPanel send={send} />
+            <ResearchPanel send={send} />
+          </div>
+          <ChatPanel send={send} />
         </aside>
       </div>
     </div>

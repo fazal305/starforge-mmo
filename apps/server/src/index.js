@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import { authRouter } from "./auth/router.js";
 import { empireRouter } from "./api/empireRouter.js";
+import { universeRouter } from "./api/universeRouter.js";
 import { createGameWebSocketServer } from "./websocket/server.js";
 import { startWorldTick } from "./game/worldTick.js";
 import { dispatchCommand } from "./game/commandDispatcher.js";
@@ -16,6 +17,7 @@ app.use(express.json());
 app.get("/health", (_req, res) => res.json({ status: "ok", uptime: process.uptime() }));
 app.use("/auth", authRouter);
 app.use("/empire", empireRouter);
+app.use("/universe", universeRouter);
 
 const httpServer = http.createServer(app);
 

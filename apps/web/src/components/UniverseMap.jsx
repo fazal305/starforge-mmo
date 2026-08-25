@@ -5,6 +5,8 @@ import { SectorCache } from "../game/world/sectorCache.js";
 import { renderUniverse, pickSystemAtScreenPoint } from "../game/renderer/renderUniverse.js";
 import { useUniverseStore } from "../stores/universeStore.js";
 import { useFleetStore, interpolateFleetPosition } from "../stores/fleetStore.js";
+import { useWorldStore } from "../stores/worldStore.js";
+import { useEmpireStore } from "../stores/empireStore.js";
 import { moveFleet } from "../websocket/commands.js";
 
 const DRAG_THRESHOLD_PX = 4;
@@ -71,7 +73,9 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
       const bounds = camera.getVisibleWorldBounds(width, height, 64);
       const { sectors, systems } = cacheRef.current.getVisible(bounds);
       const { selectedSystem, hoveredSystemId } = useUniverseStore.getState();
-      const { fleets: rawFleets, selectedFleetId } = useFleetStore.getState();
+      const { selectedFleetId } = useFleetStore.getState();
+      const { fleets: rawFleets, empires } = useWorldStore.getState();
+      const myEmpireId = useEmpireStore.getState().empire?.id;
 
       const fleets = rawFleets.map((fleet) => {
         const renderPosition = interpolateFleetPosition(fleet, Date.now());
@@ -81,7 +85,9 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
           const dy = fleet.destination.y - fleet.position.y;
           heading = Math.atan2(dx, -dy);
         }
-        return { ...fleet, renderPosition, heading, selected: fleet.id === selectedFleetId };
+        const isMine = fleet.empireId === myEmpireId;
+        const color = isMine ? colorsRef.current.accent : (empires[fleet.empireId]?.color ?? "#8a94a8");
+        return { ...fleet, renderPosition, heading, selected: fleet.id === selectedFleetId, color, isMine };
       });
 
       renderUniverse(ctx, {
