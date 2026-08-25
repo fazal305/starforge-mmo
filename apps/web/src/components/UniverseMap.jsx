@@ -68,7 +68,7 @@ export default function UniverseMap({ debugOverlayVisible }) {
       const camera = cameraRef.current;
       const bounds = camera.getVisibleWorldBounds(width, height, 64);
       const { sectors, systems } = cacheRef.current.getVisible(bounds);
-      const { selectedSystemId, hoveredSystemId } = useUniverseStore.getState();
+      const { selectedSystem, hoveredSystemId } = useUniverseStore.getState();
 
       renderUniverse(ctx, {
         camera,
@@ -76,7 +76,7 @@ export default function UniverseMap({ debugOverlayVisible }) {
         viewportH: height,
         sectors,
         systems,
-        selectedSystemId,
+        selectedSystemId: selectedSystem?.id ?? null,
         hoveredSystemId,
         colors: colorsRef.current,
       });
@@ -98,7 +98,11 @@ export default function UniverseMap({ debugOverlayVisible }) {
 
     const handlePointerDown = (e) => {
       pointerStateRef.current = { dragging: true, moved: false, lastX: e.clientX, lastY: e.clientY };
-      canvas.setPointerCapture(e.pointerId);
+      try {
+        canvas.setPointerCapture(e.pointerId);
+      } catch {
+        // Pointer session already ended (fast tap/synthetic event) — dragging still works via move/up.
+      }
     };
 
     const handlePointerMove = (e) => {
@@ -127,7 +131,11 @@ export default function UniverseMap({ debugOverlayVisible }) {
 
     const handlePointerUp = (e) => {
       const state = pointerStateRef.current;
-      canvas.releasePointerCapture(e.pointerId);
+      try {
+        canvas.releasePointerCapture(e.pointerId);
+      } catch {
+        // Already released/never captured — safe to ignore.
+      }
       if (state.dragging && !state.moved) {
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -135,7 +143,7 @@ export default function UniverseMap({ debugOverlayVisible }) {
         const bounds = cameraRef.current.getVisibleWorldBounds(width, height, 64);
         const { systems } = cacheRef.current.getVisible(bounds);
         const hit = pickSystemAtScreenPoint(cameraRef.current, width, height, systems, x, y);
-        setSelectedSystem(hit?.id ?? null);
+        setSelectedSystem(hit ?? null);
       }
       pointerStateRef.current = { dragging: false, moved: false, lastX: 0, lastY: 0 };
     };

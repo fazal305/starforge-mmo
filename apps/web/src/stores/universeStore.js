@@ -1,10 +1,10 @@
 import { create } from "zustand";
 
 export const useUniverseStore = create((set) => ({
-  selectedSystemId: null,
+  selectedSystem: null,
   hoveredSystemId: null,
   debugOverlayVisible: false,
-  setSelectedSystem: (systemId) => set({ selectedSystemId: systemId }),
+  setSelectedSystem: (system) => set({ selectedSystem: system }),
   setHoveredSystem: (systemId) => set({ hoveredSystemId: systemId }),
   toggleDebugOverlay: () => set((s) => ({ debugOverlayVisible: !s.debugOverlayVisible })),
 }));

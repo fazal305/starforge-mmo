@@ -5,6 +5,7 @@ import { users } from "../database/schema.js";
 import { eq, or } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "./password.js";
 import { signSession } from "./session.js";
+import { createDefaultEmpire } from "../game/empire.js";
 
 export const authRouter = Router();
 
@@ -40,6 +41,8 @@ authRouter.post("/register", async (req, res) => {
   if (!user) {
     return res.status(500).json({ error: "Failed to create user" });
   }
+
+  await createDefaultEmpire(user.id, user.username);
 
   const token = signSession({ userId: user.id, username: user.username });
   res.status(201).json({ token, user: { id: user.id, username: user.username } });

@@ -26,6 +26,11 @@ export const exploreSystemCommandSchema = envelope(
   z.object({ systemId: z.string() }),
 );
 
+export const foundColonyCommandSchema = envelope(
+  "FOUND_COLONY",
+  z.object({ planetId: z.string() }),
+);
+
 export const buildStructureCommandSchema = envelope(
   "BUILD_STRUCTURE",
   z.object({ colonyId: z.string(), buildingType: z.string() }),
@@ -52,6 +57,7 @@ export const sendChatCommandSchema = envelope(
 export const clientCommandSchema = z.discriminatedUnion("type", [
   moveFleetCommandSchema,
   exploreSystemCommandSchema,
+  foundColonyCommandSchema,
   buildStructureCommandSchema,
   startResearchCommandSchema,
   attackFleetCommandSchema,

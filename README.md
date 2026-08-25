@@ -123,7 +123,7 @@ Steps will be documented here when that phase runs.
 
 - [x] **Phase 1 — Foundation**: monorepo, auth scaffolding, WS protocol, design system
 - [x] **Phase 2 — Universe**: deterministic generation, camera, viewport virtualization
-- [ ] **Phase 3 — Player Empire**: resources, colonies, buildings, research
+- [x] **Phase 3 — Player Empire**: resources, colonies, buildings, research
 - [ ] **Phase 4 — Fleets**: movement, interpolation, server-authoritative commands
 - [ ] **Phase 5 — Multiplayer**: live sync across multiple players, chat, reconnect
 - [ ] **Phase 6 — Combat**: server-side resolution, battle logs

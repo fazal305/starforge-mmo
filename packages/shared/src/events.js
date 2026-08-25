@@ -74,6 +74,33 @@ export const empireUpdatedEventSchema = envelope(
   }),
 );
 
+export const colonyUpdatedEventSchema = envelope(
+  "COLONY_UPDATED",
+  z.object({
+    id: z.string(),
+    empireId: z.string(),
+    planetId: z.string(),
+    buildings: z.array(
+      z.object({
+        id: z.string(),
+        type: z.string(),
+        level: z.number(),
+        constructionCompletesAt: z.number().nullable(),
+      }),
+    ),
+  }),
+);
+
+export const researchUpdatedEventSchema = envelope(
+  "RESEARCH_UPDATED",
+  z.object({
+    empireId: z.string(),
+    technologyId: z.string(),
+    progressPoints: z.number(),
+    unlockedAt: z.number().nullable(),
+  }),
+);
+
 export const serverEventSchema = z.discriminatedUnion("type", [
   worldTickEventSchema,
   fleetUpdatedEventSchema,
@@ -84,4 +111,6 @@ export const serverEventSchema = z.discriminatedUnion("type", [
   playerLeftEventSchema,
   commandAckEventSchema,
   empireUpdatedEventSchema,
+  colonyUpdatedEventSchema,
+  researchUpdatedEventSchema,
 ]);
