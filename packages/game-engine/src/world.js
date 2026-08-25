@@ -17,6 +17,18 @@ export function pairSectorCoords(gx, gy) {
   return a >= b ? a * a + a + b : a + b * b;
 }
 
+function fromUnsigned(u) {
+  return u % 2 === 0 ? u / 2 : -(u + 1) / 2;
+}
+
+/** Inverse of pairSectorCoords: recovers (gx, gy) from a sector index. */
+export function unpairSectorCoords(index) {
+  const sq = Math.floor(Math.sqrt(index));
+  const rem = index - sq * sq;
+  const [a, b] = rem < sq ? [rem, sq] : [sq, rem - sq];
+  return { gx: fromUnsigned(a), gy: fromUnsigned(b) };
+}
+
 function generatePlanet(seed, sectorIndex, systemIndex, planetIndex) {
   const rand = createRng(`${seed}:planet:${sectorIndex}:${systemIndex}:${planetIndex}`);
   return {
@@ -81,4 +93,32 @@ export function generateSector(seed, gx, gy) {
     hasNebula: rand() < 0.2,
     systems,
   };
+}
+
+/**
+ * Resolves a system's world-space position and data purely from its ID —
+ * used server-side (e.g. to place a newly built fleet, or validate a move
+ * destination) without ever trusting client-supplied coordinates. Cheap:
+ * it only ever regenerates the one sector the system belongs to.
+ *
+ * @param {string} seed
+ * @param {string} systemId e.g. "system_1842_3"
+ */
+export function resolveSystemById(seed, systemId) {
+  const match = /^system_(\d+)_(\d+)$/.exec(systemId);
+  if (!match) return null;
+  const [, sectorIndexStr, systemIndexStr] = match;
+  const sectorIndex = Number(sectorIndexStr);
+  const systemIndex = Number(systemIndexStr);
+  const { gx, gy } = unpairSectorCoords(sectorIndex);
+  const sector = generateSector(seed, gx, gy);
+  return sector.systems[systemIndex] ?? null;
+}
+
+/** @param {string} seed @param {string} planetId e.g. "planet_1842_3_0" */
+export function resolveSystemByPlanetId(seed, planetId) {
+  const match = /^planet_(\d+)_(\d+)_\d+$/.exec(planetId);
+  if (!match) return null;
+  const [, sectorIndexStr, systemIndexStr] = match;
+  return resolveSystemById(seed, `system_${sectorIndexStr}_${systemIndexStr}`);
 }

@@ -1,9 +1,14 @@
 import { eq, and, isNull, isNotNull, lte, sql } from "drizzle-orm";
 import { WORLD_TICK_MS, BUILDING_TYPES, RESEARCH_CATALOG } from "@starforge/shared";
 import { db } from "../database/client.js";
-import { buildings, colonies, empires, researchProgress } from "../database/schema.js";
+import { buildings, colonies, empires, researchProgress, fleets } from "../database/schema.js";
 import { broadcast, sendTo } from "../websocket/server.js";
 import { toResourceBundle } from "./empire.js";
+
+async function empireIdToUserIdMap() {
+  const rows = await db.select({ id: empires.id, userId: empires.userId }).from(empires);
+  return new Map(rows.map((r) => [r.id, r.userId]));
+}
 
 let tickCount = 0;
 let running = false; // overlap guard: skip a tick if the previous one is still processing
@@ -57,8 +62,7 @@ async function computeProductionAndActiveBuildings() {
   return { productionByEmpire, buildingsByColony };
 }
 
-async function applyProduction(productionByEmpire) {
-  const empireIdToUserId = new Map();
+async function applyProduction(productionByEmpire, empireIdToUserId) {
   for (const [empireId, prod] of productionByEmpire) {
     if (!prod.credits && !prod.minerals && !prod.energy && !prod.research) continue;
     const [updated] = await db
@@ -71,16 +75,57 @@ async function applyProduction(productionByEmpire) {
       })
       .where(eq(empires.id, empireId))
       .returning();
-    if (updated) {
-      empireIdToUserId.set(empireId, updated.userId);
-      sendTo(updated.userId, {
+    const userId = updated ? empireIdToUserId.get(empireId) : null;
+    if (updated && userId) {
+      sendTo(userId, {
         type: "RESOURCE_UPDATED",
         serverTime: Date.now(),
         payload: { empireId, resources: toResourceBundle(updated) },
       });
     }
   }
-  return empireIdToUserId;
+}
+
+async function processArrivedFleets(now, empireIdToUserId) {
+  const arrived = await db
+    .select()
+    .from(fleets)
+    .where(and(eq(fleets.status, "MOVING"), isNotNull(fleets.departedAt)));
+
+  for (const fleet of arrived) {
+    const arrivesAt = fleet.departedAt.getTime() + fleet.etaMs;
+    if (arrivesAt > now.getTime()) continue;
+
+    await db
+      .update(fleets)
+      .set({
+        positionX: fleet.destinationX,
+        positionY: fleet.destinationY,
+        destinationX: null,
+        destinationY: null,
+        departedAt: null,
+        etaMs: null,
+        status: "IDLE",
+      })
+      .where(eq(fleets.id, fleet.id));
+
+    const userId = empireIdToUserId.get(fleet.empireId);
+    if (userId) {
+      sendTo(userId, {
+        type: "FLEET_UPDATED",
+        serverTime: Date.now(),
+        payload: {
+          id: fleet.id,
+          empireId: fleet.empireId,
+          position: { x: fleet.destinationX, y: fleet.destinationY },
+          destination: null,
+          departedAt: null,
+          etaMs: null,
+          status: "IDLE",
+        },
+      });
+    }
+  }
 }
 
 async function advanceResearch(productionByEmpire, empireIdToUserId) {
@@ -119,21 +164,15 @@ async function advanceResearch(productionByEmpire, empireIdToUserId) {
 
 async function runTick() {
   const now = new Date();
+  const empireIdToUserId = await empireIdToUserIdMap();
+
   const completing = await completeFinishedConstruction(now);
   const { productionByEmpire, buildingsByColony } = await computeProductionAndActiveBuildings();
-  const empireIdToUserId = await applyProduction(productionByEmpire);
+  await applyProduction(productionByEmpire, empireIdToUserId);
   await advanceResearch(productionByEmpire, empireIdToUserId);
+  await processArrivedFleets(now, empireIdToUserId);
 
   if (completing.length > 0) {
-    // Need userId for empires that only had a completion this tick (no resource delta,
-    // e.g. a shipyard) — production loop above won't have populated their userId.
-    const missingEmpireIds = [...new Set(completing.map((c) => c.empireId))].filter((id) => !empireIdToUserId.has(id));
-    if (missingEmpireIds.length > 0) {
-      const rows = await db.select({ id: empires.id, userId: empires.userId }).from(empires);
-      for (const row of rows) {
-        if (missingEmpireIds.includes(row.id)) empireIdToUserId.set(row.id, row.userId);
-      }
-    }
     for (const row of completing) {
       const userId = empireIdToUserId.get(row.empireId);
       if (!userId) continue;
@@ -151,7 +190,7 @@ async function runTick() {
   }
 }
 
-/** Server-side world tick: fleet movement/combat land in later phases; this drives the economy. */
+/** Server-side world tick: drives the economy, research, and fleet arrivals; combat lands in a later phase. */
 export function startWorldTick() {
   return setInterval(async () => {
     if (running) return;

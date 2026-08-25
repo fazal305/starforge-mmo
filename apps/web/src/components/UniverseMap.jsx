@@ -4,6 +4,8 @@ import { Camera } from "../game/camera/Camera.js";
 import { SectorCache } from "../game/world/sectorCache.js";
 import { renderUniverse, pickSystemAtScreenPoint } from "../game/renderer/renderUniverse.js";
 import { useUniverseStore } from "../stores/universeStore.js";
+import { useFleetStore, interpolateFleetPosition } from "../stores/fleetStore.js";
+import { moveFleet } from "../websocket/commands.js";
 
 const DRAG_THRESHOLD_PX = 4;
 const STATS_UPDATE_INTERVAL_MS = 500;
@@ -18,7 +20,7 @@ function readThemeColors() {
   };
 }
 
-export default function UniverseMap({ debugOverlayVisible }) {
+export default function UniverseMap({ debugOverlayVisible, send }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const cameraRef = useRef(new Camera({ zoom: 0.35 }));
@@ -69,6 +71,18 @@ export default function UniverseMap({ debugOverlayVisible }) {
       const bounds = camera.getVisibleWorldBounds(width, height, 64);
       const { sectors, systems } = cacheRef.current.getVisible(bounds);
       const { selectedSystem, hoveredSystemId } = useUniverseStore.getState();
+      const { fleets: rawFleets, selectedFleetId } = useFleetStore.getState();
+
+      const fleets = rawFleets.map((fleet) => {
+        const renderPosition = interpolateFleetPosition(fleet, Date.now());
+        let heading;
+        if (fleet.status === "MOVING" && fleet.destination) {
+          const dx = fleet.destination.x - fleet.position.x;
+          const dy = fleet.destination.y - fleet.position.y;
+          heading = Math.atan2(dx, -dy);
+        }
+        return { ...fleet, renderPosition, heading, selected: fleet.id === selectedFleetId };
+      });
 
       renderUniverse(ctx, {
         camera,
@@ -78,6 +92,7 @@ export default function UniverseMap({ debugOverlayVisible }) {
         systems,
         selectedSystemId: selectedSystem?.id ?? null,
         hoveredSystemId,
+        fleets,
         colors: colorsRef.current,
       });
 
@@ -140,6 +155,16 @@ export default function UniverseMap({ debugOverlayVisible }) {
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
+
+        const { awaitingMoveOrder, selectedFleetId, cancelMoveOrder } = useFleetStore.getState();
+        if (awaitingMoveOrder && selectedFleetId) {
+          const destination = cameraRef.current.screenToWorld(x, y, width, height);
+          send?.(moveFleet(selectedFleetId, destination));
+          cancelMoveOrder();
+          pointerStateRef.current = { dragging: false, moved: false, lastX: 0, lastY: 0 };
+          return;
+        }
+
         const bounds = cameraRef.current.getVisibleWorldBounds(width, height, 64);
         const { systems } = cacheRef.current.getVisible(bounds);
         const hit = pickSystemAtScreenPoint(cameraRef.current, width, height, systems, x, y);
@@ -172,7 +197,7 @@ export default function UniverseMap({ debugOverlayVisible }) {
       canvas.removeEventListener("pointercancel", handlePointerUp);
       canvas.removeEventListener("wheel", handleWheel);
     };
-  }, [setSelectedSystem, setHoveredSystem]);
+  }, [setSelectedSystem, setHoveredSystem, send]);
 
   return (
     <div ref={containerRef} style={{ position: "relative", flex: 1, overflow: "hidden" }}>

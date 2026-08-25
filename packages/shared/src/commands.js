@@ -21,6 +21,11 @@ export const moveFleetCommandSchema = envelope(
   z.object({ fleetId: z.string(), destination: vec2Schema }),
 );
 
+export const createFleetCommandSchema = envelope(
+  "CREATE_FLEET",
+  z.object({ colonyId: z.string(), hullType: z.string(), count: z.number().int().min(1).max(50) }),
+);
+
 export const exploreSystemCommandSchema = envelope(
   "EXPLORE_SYSTEM",
   z.object({ systemId: z.string() }),
@@ -56,6 +61,7 @@ export const sendChatCommandSchema = envelope(
 
 export const clientCommandSchema = z.discriminatedUnion("type", [
   moveFleetCommandSchema,
+  createFleetCommandSchema,
   exploreSystemCommandSchema,
   foundColonyCommandSchema,
   buildStructureCommandSchema,

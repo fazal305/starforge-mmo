@@ -3,11 +3,15 @@ import { sendTo } from "../websocket/server.js";
 import { handleFoundColony } from "./commands/foundColony.js";
 import { handleBuildStructure } from "./commands/buildStructure.js";
 import { handleStartResearch } from "./commands/startResearch.js";
+import { handleCreateFleet } from "./commands/createFleet.js";
+import { handleMoveFleet } from "./commands/moveFleet.js";
 
 const HANDLERS = {
   FOUND_COLONY: handleFoundColony,
   BUILD_STRUCTURE: handleBuildStructure,
   START_RESEARCH: handleStartResearch,
+  CREATE_FLEET: handleCreateFleet,
+  MOVE_FLEET: handleMoveFleet,
 };
 
 /**

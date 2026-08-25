@@ -3,6 +3,7 @@ import { useConnectionStore } from "./stores/connectionStore";
 import { useUniverseStore } from "./stores/universeStore";
 import { useAuthStore } from "./stores/authStore";
 import { useEmpireStore } from "./stores/empireStore";
+import { useFleetStore } from "./stores/fleetStore";
 import { fetchEmpire } from "./services/api";
 import { useGameSession } from "./hooks/useGameSession";
 import UniverseMap from "./components/UniverseMap";
@@ -10,6 +11,7 @@ import AuthScreen from "./components/AuthScreen";
 import EmpireBar from "./components/EmpireBar";
 import ColonyPanel from "./components/ColonyPanel";
 import ResearchPanel from "./components/ResearchPanel";
+import FleetPanel from "./components/FleetPanel";
 
 function ConnectionBadge() {
   const status = useConnectionStore((s) => s.status);
@@ -47,16 +49,22 @@ function GameShell({ token }) {
   const hydrate = useEmpireStore((s) => s.hydrate);
   const logout = useAuthStore((s) => s.logout);
   const resetEmpire = useEmpireStore((s) => s.reset);
+  const hydrateFleets = useFleetStore((s) => s.hydrate);
+  const resetFleets = useFleetStore((s) => s.reset);
   const send = useGameSession(token);
 
   useEffect(() => {
     fetchEmpire(token)
-      .then(hydrate)
+      .then(({ fleets, ...rest }) => {
+        hydrate(rest);
+        hydrateFleets(fleets ?? []);
+      })
       .catch((err) => console.error("Failed to load empire:", err.message));
-  }, [token, hydrate]);
+  }, [token, hydrate, hydrateFleets]);
 
   const handleLogout = () => {
     resetEmpire();
+    resetFleets();
     logout();
   };
 
@@ -113,7 +121,7 @@ function GameShell({ token }) {
         </div>
       </header>
       <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
-        <UniverseMap debugOverlayVisible={debugOverlayVisible} />
+        <UniverseMap debugOverlayVisible={debugOverlayVisible} send={send} />
         <aside
           style={{
             width: 280,
@@ -130,6 +138,7 @@ function GameShell({ token }) {
           }}
         >
           <ColonyPanel send={send} />
+          <FleetPanel send={send} />
           <ResearchPanel send={send} />
         </aside>
       </div>

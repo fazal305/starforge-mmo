@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "../database/client.js";
-import { colonies, buildings, researchProgress } from "../database/schema.js";
+import { colonies, buildings, researchProgress, fleets, ships } from "../database/schema.js";
 import { requireAuth } from "../auth/middleware.js";
 import { getEmpireByUserId, toResourceBundle } from "../game/empire.js";
 
@@ -22,6 +22,12 @@ empireRouter.get("/", async (req, res) => {
   }
 
   const progress = await db.select().from(researchProgress).where(eq(researchProgress.empireId, empire.id));
+
+  const empireFleets = await db.select().from(fleets).where(eq(fleets.empireId, empire.id));
+  const shipsByFleet = {};
+  for (const fleet of empireFleets) {
+    shipsByFleet[fleet.id] = await db.select().from(ships).where(eq(ships.fleetId, fleet.id));
+  }
 
   res.json({
     empire: {
@@ -45,6 +51,16 @@ empireRouter.get("/", async (req, res) => {
       technologyId: p.technologyId,
       progressPoints: p.progressPoints,
       unlockedAt: p.unlockedAt ? p.unlockedAt.getTime() : null,
+    })),
+    fleets: empireFleets.map((f) => ({
+      id: f.id,
+      empireId: f.empireId,
+      position: { x: f.positionX, y: f.positionY },
+      destination: f.destinationX !== null ? { x: f.destinationX, y: f.destinationY } : null,
+      departedAt: f.departedAt ? f.departedAt.getTime() : null,
+      etaMs: f.etaMs,
+      status: f.status,
+      ships: (shipsByFleet[f.id] ?? []).map((s) => ({ id: s.id, hullType: s.hullType, count: s.count })),
     })),
   });
 });

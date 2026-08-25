@@ -10,6 +10,9 @@ importers:
 
   apps/server:
     dependencies:
+      '@starforge/game-engine':
+        specifier: workspace:*
+        version: link:../../packages/game-engine
       '@starforge/shared':
         specifier: workspace:*
         version: link:../../packages/shared

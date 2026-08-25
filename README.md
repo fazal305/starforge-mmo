@@ -5,10 +5,9 @@ deterministic procedural universe, found colonies, build fleets, and
 compete for territory — with the server holding sole authority over
 everything that matters.
 
-This repository is built in phases (see [Roadmap](#roadmap) below). This
-README reflects **Phase 1: Foundation** — the monorepo, auth, and
-WebSocket scaffolding are in place; there is no map, fleets, combat, or
-economy yet.
+This repository is built in phases (see [Roadmap](#roadmap) below).
+Auth, the universe map, empire economy, and fleets are playable now;
+multiplayer sync and combat are still to come.
 
 ## Architecture
 
@@ -88,6 +87,15 @@ pnpm dev:server                              # http://localhost:4000
 pnpm dev:web                                 # http://localhost:5173
 ```
 
+### Try it out
+
+There's no seeded account — register your own from the app's sign-up
+form (any username/password works, e.g. `commander` / `TestPass123`).
+Registering auto-creates your empire with starting resources; from
+there: select a star system on the map → found a colony → build a
+shipyard → build a fleet → select the fleet → "Move fleet…" → click
+the map to send it somewhere.
+
 ## Environment variables
 
 See [`.env.example`](.env.example) for the full list. Nothing secret is
@@ -124,7 +132,7 @@ Steps will be documented here when that phase runs.
 - [x] **Phase 1 — Foundation**: monorepo, auth scaffolding, WS protocol, design system
 - [x] **Phase 2 — Universe**: deterministic generation, camera, viewport virtualization
 - [x] **Phase 3 — Player Empire**: resources, colonies, buildings, research
-- [ ] **Phase 4 — Fleets**: movement, interpolation, server-authoritative commands
+- [x] **Phase 4 — Fleets**: movement, interpolation, server-authoritative commands
 - [ ] **Phase 5 — Multiplayer**: live sync across multiple players, chat, reconnect
 - [ ] **Phase 6 — Combat**: server-side resolution, battle logs
 - [ ] **Phase 7 — Polish**: performance overlay, accessibility, sound, onboarding

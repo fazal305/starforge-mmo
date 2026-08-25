@@ -30,6 +30,9 @@ export const fleetUpdatedEventSchema = envelope(
     departedAt: z.number().nullable(),
     etaMs: z.number().nullable(),
     status: z.enum(["IDLE", "MOVING", "COMBAT"]),
+    // Present on creation (composition is new information); omitted on move/arrival
+    // updates, where the client already knows its own fleet's ships.
+    ships: z.array(z.object({ id: z.string(), hullType: z.string(), count: z.number() })).optional(),
   }),
 );
 

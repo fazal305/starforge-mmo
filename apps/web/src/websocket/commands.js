@@ -5,3 +5,5 @@ function makeCommand(type, payload) {
 export const foundColony = (planetId) => makeCommand("FOUND_COLONY", { planetId });
 export const buildStructure = (colonyId, buildingType) => makeCommand("BUILD_STRUCTURE", { colonyId, buildingType });
 export const startResearch = (technologyId) => makeCommand("START_RESEARCH", { empireId: "", technologyId });
+export const createFleet = (colonyId, hullType, count) => makeCommand("CREATE_FLEET", { colonyId, hullType, count });
+export const moveFleet = (fleetId, destination) => makeCommand("MOVE_FLEET", { fleetId, destination });

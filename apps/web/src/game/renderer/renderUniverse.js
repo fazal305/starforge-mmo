@@ -22,11 +22,12 @@ const MIN_ZOOM_FOR_PLANET_DOTS = 0.6;
  *   systems: object[],
  *   selectedSystemId: string | null,
  *   hoveredSystemId: string | null,
+ *   fleets?: { id: string, status: string, renderPosition: { x: number, y: number }, selected: boolean }[],
  *   colors: { background: string, gridLine: string, textSecondary: string, accent: string },
  * }} params
  */
 export function renderUniverse(ctx, params) {
-  const { camera, viewportW, viewportH, sectors, systems, selectedSystemId, hoveredSystemId, colors } = params;
+  const { camera, viewportW, viewportH, sectors, systems, selectedSystemId, hoveredSystemId, fleets, colors } = params;
 
   ctx.save();
   ctx.clearRect(0, 0, viewportW, viewportH);
@@ -45,6 +46,34 @@ export function renderUniverse(ctx, params) {
     });
   }
 
+  for (const fleet of fleets ?? []) {
+    drawFleet(ctx, camera, viewportW, viewportH, fleet, colors);
+  }
+
+  ctx.restore();
+}
+
+function drawFleet(ctx, camera, viewportW, viewportH, fleet, colors) {
+  const pos = camera.worldToScreen(fleet.renderPosition.x, fleet.renderPosition.y, viewportW, viewportH);
+  const size = Math.max(3, 4 * Math.sqrt(camera.zoom));
+
+  ctx.save();
+  ctx.translate(pos.x, pos.y);
+  if (fleet.status === "MOVING" && fleet.heading !== undefined) {
+    ctx.rotate(fleet.heading);
+  }
+  ctx.beginPath();
+  ctx.moveTo(0, -size);
+  ctx.lineTo(size * 0.7, size * 0.7);
+  ctx.lineTo(-size * 0.7, size * 0.7);
+  ctx.closePath();
+  ctx.fillStyle = fleet.selected ? colors.accent : "#d7dce6";
+  ctx.fill();
+  if (fleet.selected) {
+    ctx.strokeStyle = colors.accent;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
