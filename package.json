@@ -6,6 +6,7 @@
   "engines": {
     "node": ">=20"
   },
+  "packageManager": "pnpm@11.23.0",
   "scripts": {
     "dev:web": "pnpm --filter @starforge/web dev",
     "dev:server": "pnpm --filter @starforge/server dev",
