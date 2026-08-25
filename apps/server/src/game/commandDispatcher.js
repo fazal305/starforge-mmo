@@ -6,6 +6,7 @@ import { handleStartResearch } from "./commands/startResearch.js";
 import { handleCreateFleet } from "./commands/createFleet.js";
 import { handleMoveFleet } from "./commands/moveFleet.js";
 import { handleSendChat } from "./commands/sendChat.js";
+import { handleAttackFleet } from "./commands/attackFleet.js";
 
 const HANDLERS = {
   FOUND_COLONY: handleFoundColony,
@@ -14,12 +15,13 @@ const HANDLERS = {
   CREATE_FLEET: handleCreateFleet,
   MOVE_FLEET: handleMoveFleet,
   SEND_CHAT: handleSendChat,
+  ATTACK_FLEET: handleAttackFleet,
 };
 
-// Territory/fleet/chat events are visible to the whole universe; resource
-// and research progress stay private to the owning connection. This is
-// the one place that decision is made, so no handler can get it wrong.
-const BROADCAST_EVENT_TYPES = new Set(["COLONY_UPDATED", "FLEET_UPDATED", "CHAT_MESSAGE"]);
+// Territory/fleet/chat/combat events are visible to the whole universe;
+// resource and research progress stay private to the owning connection.
+// This is the one place that decision is made, so no handler can get it wrong.
+const BROADCAST_EVENT_TYPES = new Set(["COLONY_UPDATED", "FLEET_UPDATED", "CHAT_MESSAGE", "COMBAT_RESOLVED"]);
 
 /**
  * Every inbound WS message passes through here: parsed against the shared

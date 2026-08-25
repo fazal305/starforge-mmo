@@ -29,7 +29,7 @@ export const fleetUpdatedEventSchema = envelope(
     destination: z.object({ x: z.number(), y: z.number() }).nullable(),
     departedAt: z.number().nullable(),
     etaMs: z.number().nullable(),
-    status: z.enum(["IDLE", "MOVING", "COMBAT"]),
+    status: z.enum(["IDLE", "MOVING", "COMBAT", "DESTROYED"]),
     // Present on creation (composition is new information); omitted on move/arrival
     // updates, where the client already knows its own fleet's ships.
     ships: z.array(z.object({ id: z.string(), hullType: z.string(), count: z.number() })).optional(),
@@ -44,10 +44,14 @@ export const resourceUpdatedEventSchema = envelope(
 export const combatResolvedEventSchema = envelope(
   "COMBAT_RESOLVED",
   z.object({
+    battleId: z.string(),
     attackerFleetId: z.string(),
+    attackerEmpireId: z.string(),
     defenderFleetId: z.string(),
-    winner: z.string(),
+    defenderEmpireId: z.string(),
+    winnerEmpireId: z.string().nullable(),
     log: z.array(z.string()),
+    occurredAt: z.number(),
   }),
 );
 

@@ -38,6 +38,9 @@ export const useWorldStore = create((set) => ({
 
   applyFleetUpdate: (payload) =>
     set((s) => {
+      if (payload.status === "DESTROYED") {
+        return { fleets: s.fleets.filter((f) => f.id !== payload.id) };
+      }
       const idx = s.fleets.findIndex((f) => f.id === payload.id);
       if (idx === -1) return { fleets: [...s.fleets, { ...payload, ships: payload.ships ?? [] }] };
       const fleets = [...s.fleets];

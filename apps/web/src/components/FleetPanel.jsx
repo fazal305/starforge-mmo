@@ -4,7 +4,9 @@ import { useEmpireStore } from "../stores/empireStore.js";
 import { useWorldStore } from "../stores/worldStore.js";
 import { useFleetStore } from "../stores/fleetStore.js";
 import { useConnectionStore } from "../stores/connectionStore.js";
-import { createFleet } from "../websocket/commands.js";
+import { createFleet, attackFleet } from "../websocket/commands.js";
+
+const CO_LOCATION_TOLERANCE = 50; // matches the server's engagement range
 
 const panelHeading = {
   margin: 0,
@@ -35,6 +37,7 @@ export default function FleetPanel({ send }) {
   const myEmpireId = useEmpireStore((s) => s.empire?.id);
   const allColonies = useWorldStore((s) => s.colonies);
   const allFleets = useWorldStore((s) => s.fleets);
+  const empires = useWorldStore((s) => s.empires);
   const selectedFleetId = useFleetStore((s) => s.selectedFleetId);
   const awaitingMoveOrder = useFleetStore((s) => s.awaitingMoveOrder);
   const selectFleet = useFleetStore((s) => s.selectFleet);
@@ -47,6 +50,16 @@ export default function FleetPanel({ send }) {
   const myColonies = allColonies.filter((c) => c.empireId === myEmpireId);
   const fleets = allFleets.filter((f) => f.empireId === myEmpireId);
   const colony = shipyardColony(myColonies);
+
+  function attackableTargets(fleet) {
+    if (fleet.status !== "IDLE") return [];
+    return allFleets.filter(
+      (rival) =>
+        rival.empireId !== myEmpireId &&
+        rival.status === "IDLE" &&
+        Math.hypot(rival.position.x - fleet.position.x, rival.position.y - fleet.position.y) <= CO_LOCATION_TOLERANCE,
+    );
+  }
 
   return (
     <div>
@@ -112,7 +125,7 @@ export default function FleetPanel({ send }) {
               {(fleet.ships ?? []).map((s) => `${s.count}x ${s.hullType}`).join(", ") || "…"}
             </div>
             {fleet.id === selectedFleetId && fleet.status === "IDLE" && (
-              <div style={{ marginTop: "var(--space-2)" }}>
+              <div style={{ marginTop: "var(--space-2)", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
                 {awaitingMoveOrder ? (
                   <button style={buttonStyle} onClick={(e) => { e.stopPropagation(); cancelMoveOrder(); }}>
                     Cancel (click map to set destination)
@@ -122,6 +135,16 @@ export default function FleetPanel({ send }) {
                     Move fleet…
                   </button>
                 )}
+                {attackableTargets(fleet).map((target) => (
+                  <button
+                    key={target.id}
+                    disabled={!connected}
+                    onClick={(e) => { e.stopPropagation(); send(attackFleet(fleet.id, target.id)); }}
+                    style={{ ...buttonStyle, background: "rgba(226, 85, 74, 0.15)", borderColor: "var(--color-danger)", color: "var(--color-danger)" }}
+                  >
+                    Attack {empires[target.empireId]?.name ?? "unknown empire"}'s fleet
+                  </button>
+                ))}
               </div>
             )}
           </li>

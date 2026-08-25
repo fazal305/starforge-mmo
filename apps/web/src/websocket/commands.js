@@ -8,3 +8,4 @@ export const startResearch = (technologyId) => makeCommand("START_RESEARCH", { e
 export const createFleet = (colonyId, hullType, count) => makeCommand("CREATE_FLEET", { colonyId, hullType, count });
 export const moveFleet = (fleetId, destination) => makeCommand("MOVE_FLEET", { fleetId, destination });
 export const sendChat = (text, channel = "global") => makeCommand("SEND_CHAT", { channel, text });
+export const attackFleet = (attackerFleetId, targetFleetId) => makeCommand("ATTACK_FLEET", { attackerFleetId, targetFleetId });

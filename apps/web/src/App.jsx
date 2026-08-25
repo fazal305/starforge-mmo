@@ -6,6 +6,7 @@ import { useEmpireStore } from "./stores/empireStore";
 import { useWorldStore } from "./stores/worldStore";
 import { usePresenceStore } from "./stores/presenceStore";
 import { useChatStore } from "./stores/chatStore";
+import { useBattleStore } from "./stores/battleStore";
 import { fetchEmpire, fetchUniverseActive } from "./services/api";
 import { useGameSession } from "./hooks/useGameSession";
 import UniverseMap from "./components/UniverseMap";
@@ -16,6 +17,8 @@ import ResearchPanel from "./components/ResearchPanel";
 import FleetPanel from "./components/FleetPanel";
 import ChatPanel from "./components/ChatPanel";
 import PresenceIndicator from "./components/PresenceIndicator";
+import BattleLogPanel from "./components/BattleLogPanel";
+import BattleNotifications from "./components/BattleNotifications";
 
 function ConnectionBadge() {
   const status = useConnectionStore((s) => s.status);
@@ -57,6 +60,7 @@ function GameShell({ token }) {
   const resetWorld = useWorldStore((s) => s.reset);
   const resetPresence = usePresenceStore((s) => s.reset);
   const resetChat = useChatStore((s) => s.reset);
+  const resetBattles = useBattleStore((s) => s.reset);
 
   // Shared by the initial load and by reconnect: WS events missed while
   // offline are gone for good, so a reconnect re-fetches a fresh snapshot
@@ -81,6 +85,7 @@ function GameShell({ token }) {
     resetWorld();
     resetPresence();
     resetChat();
+    resetBattles();
     logout();
   };
 
@@ -137,8 +142,9 @@ function GameShell({ token }) {
           </button>
         </div>
       </header>
-      <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+      <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
         <UniverseMap debugOverlayVisible={debugOverlayVisible} send={send} />
+        <BattleNotifications />
         <aside
           style={{
             width: 280,
@@ -156,6 +162,7 @@ function GameShell({ token }) {
             <ColonyPanel send={send} />
             <FleetPanel send={send} />
             <ResearchPanel send={send} />
+            <BattleLogPanel />
           </div>
           <ChatPanel send={send} />
         </aside>

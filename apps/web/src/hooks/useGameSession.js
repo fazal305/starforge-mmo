@@ -5,6 +5,7 @@ import { useEmpireStore } from "../stores/empireStore.js";
 import { useWorldStore, ensureEmpireInfo } from "../stores/worldStore.js";
 import { usePresenceStore } from "../stores/presenceStore.js";
 import { useChatStore } from "../stores/chatStore.js";
+import { useBattleStore } from "../stores/battleStore.js";
 
 const WS_URL = import.meta.env.VITE_WS_URL ?? "ws://localhost:4000/ws";
 
@@ -29,6 +30,7 @@ export function useGameSession(token, onReconnected) {
   const addPlayer = usePresenceStore((s) => s.addPlayer);
   const removePlayer = usePresenceStore((s) => s.removePlayer);
   const addChatMessage = useChatStore((s) => s.addMessage);
+  const addBattle = useBattleStore((s) => s.addBattle);
 
   useEffect(() => {
     if (!token) {
@@ -58,7 +60,8 @@ export function useGameSession(token, onReconnected) {
         } else if (event.type === "PLAYER_JOINED") addPlayer(event.payload.playerId, event.payload.username);
         else if (event.type === "PLAYER_LEFT") removePlayer(event.payload.playerId);
         else if (event.type === "CHAT_MESSAGE") addChatMessage(event.payload);
-        // WORLD_TICK / COMMAND_ACK / combat land elsewhere or in a later phase.
+        else if (event.type === "COMBAT_RESOLVED") addBattle(event.payload);
+        // WORLD_TICK / COMMAND_ACK land elsewhere.
       },
     });
     socketRef.current = socket;
@@ -79,6 +82,7 @@ export function useGameSession(token, onReconnected) {
     addPlayer,
     removePlayer,
     addChatMessage,
+    addBattle,
   ]);
 
   return useCallback((command) => socketRef.current?.send(command), []);

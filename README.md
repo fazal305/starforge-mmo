@@ -6,9 +6,9 @@ compete for territory — with the server holding sole authority over
 everything that matters.
 
 This repository is built in phases (see [Roadmap](#roadmap) below).
-Auth, the universe map, empire economy, fleets, and live multiplayer
-(shared territory, presence, chat) are playable now; combat is still
-to come.
+Auth, the universe map, empire economy, fleets, live multiplayer
+(shared territory, presence, chat), and fleet combat are all playable
+now; only polish (Phase 7) remains.
 
 ## Architecture
 
@@ -103,7 +103,8 @@ form (any username/password works, e.g. `commander` / `TestPass123`).
 Registering auto-creates your empire with starting resources; from
 there: select a star system on the map → found a colony → build a
 shipyard → build a fleet → select the fleet → "Move fleet…" → click
-the map to send it somewhere.
+the map to send it somewhere. Move a fleet to the same spot as a rival
+fleet (within ~50 units) and an "Attack" button appears.
 
 ## Environment variables
 
@@ -143,7 +144,7 @@ Steps will be documented here when that phase runs.
 - [x] **Phase 3 — Player Empire**: resources, colonies, buildings, research
 - [x] **Phase 4 — Fleets**: movement, interpolation, server-authoritative commands
 - [x] **Phase 5 — Multiplayer**: live sync across multiple players, chat, reconnect
-- [ ] **Phase 6 — Combat**: server-side resolution, battle logs
+- [x] **Phase 6 — Combat**: server-side resolution, battle logs
 - [ ] **Phase 7 — Polish**: performance overlay, accessibility, sound, onboarding
 
 ## Performance considerations
