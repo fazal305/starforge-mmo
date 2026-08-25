@@ -57,7 +57,8 @@ starforge-mmo/
 │   ├── web/            Vite + React frontend
 │   └── server/          Express + ws backend, Drizzle ORM
 ├── packages/
-│   └── shared/          Zod command/event schemas, constants
+│   ├── shared/           Zod command/event schemas, constants
+│   └── game-engine/      deterministic seeded universe generation
 ├── docs/                 architecture, protocol, and schema notes
 └── pnpm-workspace.yaml
 ```
@@ -121,7 +122,7 @@ Steps will be documented here when that phase runs.
 ## Roadmap
 
 - [x] **Phase 1 — Foundation**: monorepo, auth scaffolding, WS protocol, design system
-- [ ] **Phase 2 — Universe**: deterministic generation, camera, viewport virtualization
+- [x] **Phase 2 — Universe**: deterministic generation, camera, viewport virtualization
 - [ ] **Phase 3 — Player Empire**: resources, colonies, buildings, research
 - [ ] **Phase 4 — Fleets**: movement, interpolation, server-authoritative commands
 - [ ] **Phase 5 — Multiplayer**: live sync across multiple players, chat, reconnect

@@ -50,6 +50,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@starforge/game-engine':
+        specifier: workspace:*
+        version: link:../../packages/game-engine
       '@starforge/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -72,6 +75,12 @@ importers:
       vite:
         specifier: ^8.2.2
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.23.12)
+
+  packages/game-engine:
+    devDependencies:
+      vitest:
+        specifier: ^2.1.4
+        version: 2.1.9(@types/node@24.13.3)(lightningcss@1.33.0)
 
   packages/shared:
     dependencies:
