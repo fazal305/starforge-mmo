@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "description": "STARFORGE — real-time multiplayer space strategy MMO",
   "engines": {
-    "node": ">=20"
+    "node": "20.x"
   },
   "packageManager": "pnpm@11.23.0",
   "scripts": {
