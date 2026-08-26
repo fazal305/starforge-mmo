@@ -138,23 +138,31 @@ connection, per the project's engineering goals.
   requires (this rules out typical serverless/edge platforms).
 - **Database**: the same Neon Postgres instance used in development.
 
-**Backend — Railway (continuous deploy from GitHub is already wired up):**
+**Backend — Railway:**
 
-The Railway service is connected to this repo's `main` branch, so a
-normal `git push` triggers a new build and deploy automatically. It
-builds from the repo root (not `apps/server/`) because the server's
-`workspace:*` dependencies only resolve inside the full pnpm workspace
-— see `railway.json` for the build/start command. Required environment
-variables on the service: `DATABASE_URL`, `AUTH_SECRET`, `NODE_ENV=production`.
+The service is linked to `fazal305/starforge-mmo` on `main` (`railway
+service source connect`), and it builds from the repo root — not
+`apps/server/` — because the server's `workspace:*` dependencies only
+resolve inside the full pnpm workspace (see `railway.json` for the
+build/start command). Required environment variables on the service:
+`DATABASE_URL`, `AUTH_SECRET`, `NODE_ENV=production`.
 
-To redeploy manually: `railway up --service starforge-mmo-server` from
-the repo root (needs `railway login` once).
+**Auto-deploy-on-push isn't actually firing yet** — the repo connection
+metadata is set, but no GitHub webhook exists for it (`gh api
+repos/fazal305/starforge-mmo/hooks` returns empty), most likely because
+the Railway GitHub App needs a one-time authorization for this repo via
+the Railway dashboard (Project → Settings → Source) that isn't
+completable through the CLI alone. Until that's done, redeploy manually
+after pushing: `railway up --service starforge-mmo-server` from the
+repo root (needs `railway login` once).
 
-**Frontend — Vercel (continuous deploy from GitHub is also wired up):**
+**Frontend — Vercel (continuous deploy from GitHub confirmed working):**
 
 The Vercel project is linked at the repo root (not `apps/web`) and
-connected to `main`, so a normal `git push` triggers a new deploy
-automatically — same as Railway. `vercel.json` at the repo root tells
+connected to `main`. Unlike Railway, this auto-deploy is verified
+actually firing — a deployment landed within ~2 minutes of a push,
+carrying the `-git-main-` alias Vercel only assigns to git-triggered
+builds. `vercel.json` at the repo root tells
 Vercel how to build the monorepo: install runs at the workspace root
 (where `pnpm-workspace.yaml` lives, so `workspace:*` deps resolve),
 then `pnpm --filter @starforge/web build`, with `apps/web/dist` as the
