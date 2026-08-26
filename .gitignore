@@ -8,3 +8,6 @@ build/
 coverage/
 .turbo/
 pnpm-lock.yaml.bak
+
+# Local Vercel folder
+.vercel

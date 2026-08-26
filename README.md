@@ -11,6 +11,10 @@ fleets, live multiplayer (shared territory, presence, chat), fleet
 combat, and a polish pass (sound, accessibility, mobile layout,
 extended debug overlay, onboarding, error handling).
 
+**Live**: [starforge-mmo.vercel.app](https://starforge-mmo.vercel.app)
+(frontend) talks to a persistent Node/WebSocket process on
+[Railway](https://railway.app) against a real Postgres database.
+
 ## Architecture
 
 ```mermaid
@@ -125,18 +129,46 @@ connection, per the project's engineering goals.
 
 ## Deployment
 
-- **Frontend**: static build (`pnpm build` in `apps/web`), deployable to
-  Vercel/Netlify.
-- **Backend**: targets [Railway](https://railway.app) — it keeps the
-  Node process alive persistently, which a real WebSocket server
-  requires (this rules out typical serverless/edge platforms). Railway
-  also offers a managed Postgres add-on if you'd rather not use Neon/Supabase.
-- **Database**: Postgres (Neon/Supabase for dev, Railway Postgres or
-  either of those for prod).
+**Live now:**
 
-Deployment has not yet been executed — it happens once the game has
-enough functionality to be worth deploying, per the phased build plan.
-Steps will be documented here when that phase runs.
+- **Frontend**: [starforge-mmo.vercel.app](https://starforge-mmo.vercel.app),
+  a static build of `apps/web` on Vercel.
+- **Backend**: [Railway](https://railway.app) — chosen because it keeps
+  the Node process alive persistently, which a real WebSocket server
+  requires (this rules out typical serverless/edge platforms).
+- **Database**: the same Neon Postgres instance used in development.
+
+**Backend — Railway (continuous deploy from GitHub is already wired up):**
+
+The Railway service is connected to this repo's `main` branch, so a
+normal `git push` triggers a new build and deploy automatically. It
+builds from the repo root (not `apps/server/`) because the server's
+`workspace:*` dependencies only resolve inside the full pnpm workspace
+— see `railway.json` for the build/start command. Required environment
+variables on the service: `DATABASE_URL`, `AUTH_SECRET`, `NODE_ENV=production`.
+
+To redeploy manually: `railway up --service starforge-mmo-server` from
+the repo root (needs `railway login` once).
+
+**Frontend — Vercel (manual deploy for now):**
+
+Vercel needs the built static output with the right API/WS URLs baked
+in at build time (Vite inlines `import.meta.env.VITE_*` into the
+bundle, so they must be set *before* building, not after):
+
+```bash
+cd apps/web
+VITE_API_URL=https://starforge-mmo-server-production.up.railway.app \
+VITE_WS_URL=wss://starforge-mmo-server-production.up.railway.app/ws \
+pnpm build
+
+vercel dist --prod --yes --name starforge-mmo
+```
+
+To wire up continuous deployment instead of this manual step, connect
+the GitHub repo to the Vercel project from the Vercel dashboard (Project
+Settings → Git), with the root directory set to `apps/web` and the two
+`VITE_*` variables above added as Project → Environment Variables.
 
 ## Roadmap
 
