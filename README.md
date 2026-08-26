@@ -150,25 +150,21 @@ variables on the service: `DATABASE_URL`, `AUTH_SECRET`, `NODE_ENV=production`.
 To redeploy manually: `railway up --service starforge-mmo-server` from
 the repo root (needs `railway login` once).
 
-**Frontend — Vercel (manual deploy for now):**
+**Frontend — Vercel (continuous deploy from GitHub is also wired up):**
 
-Vercel needs the built static output with the right API/WS URLs baked
-in at build time (Vite inlines `import.meta.env.VITE_*` into the
-bundle, so they must be set *before* building, not after):
+The Vercel project is linked at the repo root (not `apps/web`) and
+connected to `main`, so a normal `git push` triggers a new deploy
+automatically — same as Railway. `vercel.json` at the repo root tells
+Vercel how to build the monorepo: install runs at the workspace root
+(where `pnpm-workspace.yaml` lives, so `workspace:*` deps resolve),
+then `pnpm --filter @starforge/web build`, with `apps/web/dist` as the
+output directory. `VITE_API_URL` and `VITE_WS_URL` are set as
+Production environment variables on the Vercel project — Vite inlines
+`import.meta.env.VITE_*` at build time, so they have to be set on
+Vercel itself, not just locally.
 
-```bash
-cd apps/web
-VITE_API_URL=https://starforge-mmo-server-production.up.railway.app \
-VITE_WS_URL=wss://starforge-mmo-server-production.up.railway.app/ws \
-pnpm build
-
-vercel dist --prod --yes --name starforge-mmo
-```
-
-To wire up continuous deployment instead of this manual step, connect
-the GitHub repo to the Vercel project from the Vercel dashboard (Project
-Settings → Git), with the root directory set to `apps/web` and the two
-`VITE_*` variables above added as Project → Environment Variables.
+To redeploy manually: `vercel --prod --yes` from the repo root (needs
+`vercel link` once to a directory already linked to the project).
 
 ## Roadmap
 
