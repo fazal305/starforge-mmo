@@ -103,10 +103,23 @@ pnpm dev:web                                 # http://localhost:5173
 
 ### Try it out
 
-There's no seeded account — register your own from the app's sign-up
-form (any username/password works, e.g. `commander` / `TestPass123`).
-Registering auto-creates your empire with starting resources; from
-there: select a star system on the map → found a colony → build a
+Live at [starforge-mmo.vercel.app](https://starforge-mmo.vercel.app).
+You can register your own account, or use one of two pre-seeded demo
+accounts (both real accounts on the live server, useful for trying out
+multiplayer solo — log in as one in a normal window and the other in
+a private/incognito window):
+
+| Username         | Password        |
+| ---------------- | --------------- |
+| `commander_one`  | `DemoPass123!`  |
+| `commander_two`  | `DemoPass123!`  |
+
+These are demo-only accounts with no real data behind them — expect
+other people trying the demo to be poking at the same two empires.
+Registering your own account works exactly the same way (any
+username/password) and gets you a private empire.
+
+Once in: select a star system on the map → found a colony → build a
 shipyard → build a fleet → select the fleet → "Move fleet…" → click
 the map to send it somewhere. Move a fleet to the same spot as a rival
 fleet (within ~50 units) and an "Attack" button appears.
