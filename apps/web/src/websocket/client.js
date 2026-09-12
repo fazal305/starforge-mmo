@@ -10,7 +10,11 @@ const RECONNECT_MAX_DELAY_MS = 8_000;
  */
 export class GameSocket {
   /**
-   * @param {{ url: string, token: string, onEvent: (event: object) => void, onStatusChange: (status: ConnectionStatus) => void }} options
+   * @param {{ url: string, token: string, onEvent: (event: object) => void, onStatusChange: (status: ConnectionStatus) => void, onAuthError?: () => void }} options
+   *   `onAuthError` fires when the server closes the connection because the
+   *   token was missing/invalid/expired (close code 4001) — distinct from an
+   *   ordinary drop, which just reconnects. It does not change what happens
+   *   next here; the caller decides (e.g. clearing a stale session).
    */
   constructor(options) {
     this.options = options;
@@ -39,7 +43,8 @@ export class GameSocket {
       }
     };
 
-    socket.onclose = () => {
+    socket.onclose = (event) => {
+      if (event.code === 4001) this.options.onAuthError?.();
       if (this.closedByUser) {
         this.options.onStatusChange("OFFLINE");
         return;

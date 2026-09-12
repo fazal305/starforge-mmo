@@ -6,7 +6,14 @@ import { useWorldStore, ensureEmpireInfo } from "../stores/worldStore.js";
 import { usePresenceStore } from "../stores/presenceStore.js";
 import { useChatStore } from "../stores/chatStore.js";
 import { useBattleStore } from "../stores/battleStore.js";
+import { useCommandErrorStore } from "../stores/commandErrorStore.js";
 import { sound } from "../audio/sound.js";
+
+// Server-enforced ownership checks (see e.g. apps/server/src/game/commands/
+// moveFleet.js, buildStructure.js) all phrase rejection the same way; match
+// that phrasing to surface a distinct "no permission" message instead of the
+// raw string.
+const PERMISSION_DENIED_PATTERN = /not owned by you/i;
 
 const WS_URL = import.meta.env.VITE_WS_URL ?? "ws://localhost:4000/ws";
 
@@ -19,8 +26,12 @@ const WS_URL = import.meta.env.VITE_WS_URL ?? "ws://localhost:4000/ws";
  *   up after having dropped — WS events missed while offline are gone for
  *   good, so the caller should re-fetch a fresh snapshot (GET /empire,
  *   GET /universe/active) rather than trust stale client state.
+ * @param {() => void} [onAuthError] called when the server rejects the token
+ *   itself (missing/invalid/expired) rather than just dropping the
+ *   connection — the caller should clear the stale session so the user sees
+ *   a "log in again" prompt instead of an endless reconnect loop.
  */
-export function useGameSession(token, onReconnected) {
+export function useGameSession(token, onReconnected, onAuthError) {
   const socketRef = useRef(null);
   const hasConnectedOnceRef = useRef(false);
   const setStatus = useConnectionStore((s) => s.setStatus);
@@ -34,6 +45,7 @@ export function useGameSession(token, onReconnected) {
   const removePlayer = usePresenceStore((s) => s.removePlayer);
   const addChatMessage = useChatStore((s) => s.addMessage);
   const addBattle = useBattleStore((s) => s.addBattle);
+  const setCommandError = useCommandErrorStore((s) => s.setError);
 
   useEffect(() => {
     if (!token) {
@@ -51,6 +63,7 @@ export function useGameSession(token, onReconnected) {
           hasConnectedOnceRef.current = true;
         }
       },
+      onAuthError: () => onAuthError?.(),
       onEvent: (event) => {
         if (event.type === "WORLD_TICK") {
           setLatency(Math.max(0, Date.now() - event.payload.serverTime));
@@ -72,7 +85,16 @@ export function useGameSession(token, onReconnected) {
           sound.notification();
         }
         else if (event.type === "COMBAT_RESOLVED") addBattle(event.payload);
-        // COMMAND_ACK lands elsewhere (the send() caller, if it needs it).
+        else if (
+          event.type === "COMMAND_ACK" &&
+          event.payload.ok === false &&
+          PERMISSION_DENIED_PATTERN.test(event.payload.error ?? "")
+        ) {
+          setCommandError("You don't have permission to do that");
+        }
+        // Other COMMAND_ACKs (success, or non-ownership rejections) land
+        // elsewhere (the send() caller, if it needs it) — unchanged from
+        // before.
       },
     });
     socketRef.current = socket;
@@ -96,6 +118,8 @@ export function useGameSession(token, onReconnected) {
     removePlayer,
     addChatMessage,
     addBattle,
+    setCommandError,
+    onAuthError,
   ]);
 
   return useCallback((command) => socketRef.current?.send(command), []);

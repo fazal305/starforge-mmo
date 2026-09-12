@@ -20,10 +20,13 @@ export default function AuthScreen() {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const setSession = useAuthStore((s) => s.setSession);
+  const sessionExpired = useAuthStore((s) => s.sessionExpired);
+  const clearSessionExpired = useAuthStore((s) => s.clearSessionExpired);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    clearSessionExpired();
     setBusy(true);
     try {
       const result = mode === "login" ? await login({ username, password }) : await register({ username, email, password });
@@ -134,9 +137,9 @@ export default function AuthScreen() {
           />
         </label>
 
-        {error && (
+        {(error || sessionExpired) && (
           <div role="alert" style={{ color: "var(--color-danger)", fontSize: "var(--font-size-xs)" }}>
-            {error}
+            {error || "Your session has expired — please log in again"}
           </div>
         )}
 

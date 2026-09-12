@@ -13,12 +13,22 @@ function loadPersisted() {
 
 export const useAuthStore = create((set) => ({
   ...loadPersisted(),
+  sessionExpired: false,
   setSession: (token, user) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, user }));
-    set({ token, user });
+    set({ token, user, sessionExpired: false });
   },
   logout: () => {
     localStorage.removeItem(STORAGE_KEY);
-    set({ token: null, user: null });
+    set({ token: null, user: null, sessionExpired: false });
   },
+  // Distinct from logout(): the server rejected the stored token as
+  // missing/invalid/expired (WS close code 4001) rather than the user
+  // choosing to sign out, so AuthScreen shows a session-expired message
+  // instead of the plain login form.
+  expireSession: () => {
+    localStorage.removeItem(STORAGE_KEY);
+    set({ token: null, user: null, sessionExpired: true });
+  },
+  clearSessionExpired: () => set({ sessionExpired: false }),
 }));

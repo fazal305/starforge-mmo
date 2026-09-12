@@ -20,6 +20,7 @@ import ChatPanel from "./components/ChatPanel";
 import PresenceIndicator from "./components/PresenceIndicator";
 import BattleLogPanel from "./components/BattleLogPanel";
 import BattleNotifications from "./components/BattleNotifications";
+import CommandErrorToast from "./components/CommandErrorToast";
 import OnboardingHint from "./components/OnboardingHint";
 import { sound } from "./audio/sound";
 import { useAudioStore } from "./stores/audioStore";
@@ -88,6 +89,7 @@ function GameShell({ token }) {
   const hydrateEmpire = useEmpireStore((s) => s.hydrate);
   const hydrateWorld = useWorldStore((s) => s.hydrate);
   const logout = useAuthStore((s) => s.logout);
+  const expireSession = useAuthStore((s) => s.expireSession);
   const resetEmpire = useEmpireStore((s) => s.reset);
   const resetWorld = useWorldStore((s) => s.reset);
   const resetPresence = usePresenceStore((s) => s.reset);
@@ -108,7 +110,7 @@ function GameShell({ token }) {
       .catch((err) => console.error("Failed to load game state:", err.message));
   }, [token, hydrateEmpire, hydrateWorld]);
 
-  const send = useGameSession(token, loadSnapshot);
+  const send = useGameSession(token, loadSnapshot, expireSession);
   const sendWithSound = useCallback(
     (command) => {
       sound.click();
@@ -209,6 +211,7 @@ function GameShell({ token }) {
       <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
         <UniverseMap debugOverlayVisible={debugOverlayVisible} send={sendWithSound} />
         <BattleNotifications />
+        <CommandErrorToast />
         <OnboardingHint />
         {(!isMobile || panelsOpen) && (
           <aside
