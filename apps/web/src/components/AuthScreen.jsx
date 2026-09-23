@@ -30,7 +30,7 @@ export default function AuthScreen() {
     setBusy(true);
     try {
       const result = mode === "login" ? await login({ username, password }) : await register({ username, email, password });
-      setSession(result.token, result.user);
+      setSession(result.user);
     } catch (err) {
       setError(err.message);
     } finally {

@@ -4,7 +4,7 @@ import { db } from "../database/client.js";
 import { users } from "../database/schema.js";
 import { eq, or } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "./password.js";
-import { signSession } from "./session.js";
+import { signSession, setSessionCookie, clearSessionCookie } from "./session.js";
 import { createDefaultEmpire } from "../game/empire.js";
 
 export const authRouter = Router();
@@ -45,7 +45,8 @@ authRouter.post("/register", async (req, res) => {
   await createDefaultEmpire(user.id, user.username);
 
   const token = signSession({ userId: user.id, username: user.username });
-  res.status(201).json({ token, user: { id: user.id, username: user.username } });
+  setSessionCookie(res, token);
+  res.status(201).json({ user: { id: user.id, username: user.username } });
 });
 
 const loginSchema = z.object({
@@ -66,11 +67,13 @@ authRouter.post("/login", async (req, res) => {
   }
 
   const token = signSession({ userId: user.id, username: user.username });
-  res.json({ token, user: { id: user.id, username: user.username } });
+  setSessionCookie(res, token);
+  res.json({ user: { id: user.id, username: user.username } });
 });
 
 authRouter.post("/logout", (_req, res) => {
-  // Stateless JWT: logout is client-side (discard token). Placeholder for
-  // future server-side revocation list if session invalidation is needed.
+  // Stateless JWT: nothing to revoke server-side (no revocation list yet),
+  // but clear the cookie so the browser stops sending the old token.
+  clearSessionCookie(res);
   res.status(204).end();
 });

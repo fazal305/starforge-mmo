@@ -1,11 +1,10 @@
-import { verifySession } from "./session.js";
+import { verifySession, SESSION_COOKIE_NAME } from "./session.js";
 
-/** Express middleware: requires a valid `Authorization: Bearer <token>` header. */
+/** Express middleware: requires a valid session token in the httpOnly cookie. */
 export function requireAuth(req, res, next) {
-  const header = req.headers.authorization;
-  const token = header?.startsWith("Bearer ") ? header.slice(7) : null;
+  const token = req.cookies?.[SESSION_COOKIE_NAME] ?? null;
   if (!token) {
-    return res.status(401).json({ error: "Missing bearer token" });
+    return res.status(401).json({ error: "Missing session cookie" });
   }
   try {
     const claims = verifySession(token);

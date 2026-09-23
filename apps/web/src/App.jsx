@@ -8,7 +8,7 @@ import { useWorldStore } from "./stores/worldStore";
 import { usePresenceStore } from "./stores/presenceStore";
 import { useChatStore } from "./stores/chatStore";
 import { useBattleStore } from "./stores/battleStore";
-import { fetchEmpire, fetchUniverseActive } from "./services/api";
+import { fetchEmpire, fetchUniverseActive, logout as logoutRequest } from "./services/api";
 import { useGameSession } from "./hooks/useGameSession";
 import UniverseMap from "./components/UniverseMap";
 import AuthScreen from "./components/AuthScreen";
@@ -83,7 +83,7 @@ function MuteToggle() {
   );
 }
 
-function GameShell({ token }) {
+function GameShell() {
   const debugOverlayVisible = useUniverseStore((s) => s.debugOverlayVisible);
   const toggleDebugOverlay = useUniverseStore((s) => s.toggleDebugOverlay);
   const hydrateEmpire = useEmpireStore((s) => s.hydrate);
@@ -102,15 +102,15 @@ function GameShell({ token }) {
   // offline are gone for good, so a reconnect re-fetches a fresh snapshot
   // rather than trusting whatever the client last knew.
   const loadSnapshot = useCallback(() => {
-    Promise.all([fetchEmpire(token), fetchUniverseActive(token)])
+    Promise.all([fetchEmpire(), fetchUniverseActive()])
       .then(([empireData, universeData]) => {
         hydrateEmpire({ empire: empireData.empire, research: empireData.research });
         hydrateWorld(universeData);
       })
       .catch((err) => console.error("Failed to load game state:", err.message));
-  }, [token, hydrateEmpire, hydrateWorld]);
+  }, [hydrateEmpire, hydrateWorld]);
 
-  const send = useGameSession(token, loadSnapshot, expireSession);
+  const send = useGameSession(true, loadSnapshot, expireSession);
   const sendWithSound = useCallback(
     (command) => {
       sound.click();
@@ -130,6 +130,10 @@ function GameShell({ token }) {
     resetChat();
     resetBattles();
     logout();
+    // Clears the httpOnly session cookie server-side. Best-effort: the
+    // client-side state is already reset above regardless of whether this
+    // request succeeds, since the user has no way to retry a failed logout.
+    logoutRequest().catch((err) => console.error("Failed to clear session cookie:", err.message));
   };
 
   return (
@@ -287,6 +291,6 @@ function GameShell({ token }) {
 }
 
 export default function App() {
-  const token = useAuthStore((s) => s.token);
-  return token ? <GameShell token={token} /> : <AuthScreen />;
+  const user = useAuthStore((s) => s.user);
+  return user ? <GameShell /> : <AuthScreen />;
 }

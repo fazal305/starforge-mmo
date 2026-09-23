@@ -21,7 +21,10 @@ const WS_URL = import.meta.env.VITE_WS_URL ?? "ws://localhost:4000/ws";
  * Owns the WS connection lifecycle for the authenticated session and routes
  * server events into stores.
  *
- * @param {string | null} token
+ * @param {boolean} authenticated whether there's a signed-in user to connect
+ *   as. The actual credential is an httpOnly cookie the browser attaches to
+ *   the WS upgrade request by itself — this flag only gates *whether* to
+ *   open the socket at all.
  * @param {() => void} [onReconnected] called when the connection comes back
  *   up after having dropped — WS events missed while offline are gone for
  *   good, so the caller should re-fetch a fresh snapshot (GET /empire,
@@ -31,7 +34,7 @@ const WS_URL = import.meta.env.VITE_WS_URL ?? "ws://localhost:4000/ws";
  *   connection — the caller should clear the stale session so the user sees
  *   a "log in again" prompt instead of an endless reconnect loop.
  */
-export function useGameSession(token, onReconnected, onAuthError) {
+export function useGameSession(authenticated, onReconnected, onAuthError) {
   const socketRef = useRef(null);
   const hasConnectedOnceRef = useRef(false);
   const setStatus = useConnectionStore((s) => s.setStatus);
@@ -48,14 +51,13 @@ export function useGameSession(token, onReconnected, onAuthError) {
   const setCommandError = useCommandErrorStore((s) => s.setError);
 
   useEffect(() => {
-    if (!token) {
+    if (!authenticated) {
       setStatus("OFFLINE");
       return;
     }
 
     const socket = new GameSocket({
       url: WS_URL,
-      token,
       onStatusChange: (status) => {
         setStatus(status);
         if (status === "CONNECTED") {
@@ -105,7 +107,7 @@ export function useGameSession(token, onReconnected, onAuthError) {
       socketRef.current = null;
     };
   }, [
-    token,
+    authenticated,
     setStatus,
     setLatency,
     setTick,
@@ -124,3 +126,4 @@ export function useGameSession(token, onReconnected, onAuthError) {
 
   return useCallback((command) => socketRef.current?.send(command), []);
 }
+

@@ -1,6 +1,7 @@
 import { WebSocketServer } from "ws";
+import { parseCookie } from "cookie";
 import { WS_PATH } from "@starforge/shared";
-import { verifySession } from "../auth/session.js";
+import { verifySession, SESSION_COOKIE_NAME } from "../auth/session.js";
 
 /** @typedef {{ socket: import("ws").WebSocket, userId: string, username: string, isAlive: boolean }} Connection */
 
@@ -40,8 +41,12 @@ export function createGameWebSocketServer(httpServer, onCommand) {
   const wss = new WebSocketServer({ server: httpServer, path: WS_PATH });
 
   wss.on("connection", (socket, request) => {
-    const url = new URL(request.url ?? "", "http://localhost");
-    const token = url.searchParams.get("token");
+    // The token now lives in an httpOnly cookie rather than a query param —
+    // the browser attaches it automatically on the WS upgrade request (it's
+    // an ordinary HTTP request under the hood), so read it straight off the
+    // raw Cookie header instead of expecting the client to pass it.
+    const cookies = parseCookie(request.headers.cookie ?? "");
+    const token = cookies[SESSION_COOKIE_NAME];
 
     let claims;
     try {

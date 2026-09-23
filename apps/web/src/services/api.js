@@ -3,6 +3,10 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 async function request(path, options = {}) {
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
+    // The session token lives in an httpOnly cookie now, not in JS-readable
+    // storage — `credentials: "include"` is what makes the browser attach
+    // it (and accept Set-Cookie from) a cross-origin request like this one.
+    credentials: "include",
     headers: { "Content-Type": "application/json", ...options.headers },
   });
   const body = await res.json().catch(() => ({}));
@@ -20,14 +24,18 @@ export function login({ username, password }) {
   return request("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) });
 }
 
-export function fetchEmpire(token) {
-  return request("/empire", { headers: { Authorization: `Bearer ${token}` } });
+export function logout() {
+  return request("/auth/logout", { method: "POST" });
 }
 
-export function fetchUniverseActive(token) {
-  return request("/universe/active", { headers: { Authorization: `Bearer ${token}` } });
+export function fetchEmpire() {
+  return request("/empire");
 }
 
-export function fetchPublicEmpire(token, empireId) {
-  return request(`/universe/empires/${empireId}`, { headers: { Authorization: `Bearer ${token}` } });
+export function fetchUniverseActive() {
+  return request("/universe/active");
+}
+
+export function fetchPublicEmpire(empireId) {
+  return request(`/universe/empires/${empireId}`);
 }

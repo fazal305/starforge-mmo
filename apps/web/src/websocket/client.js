@@ -10,7 +10,11 @@ const RECONNECT_MAX_DELAY_MS = 8_000;
  */
 export class GameSocket {
   /**
-   * @param {{ url: string, token: string, onEvent: (event: object) => void, onStatusChange: (status: ConnectionStatus) => void, onAuthError?: () => void }} options
+   * @param {{ url: string, onEvent: (event: object) => void, onStatusChange: (status: ConnectionStatus) => void, onAuthError?: () => void }} options
+   *   No token is passed here: the session lives in an httpOnly cookie, and
+   *   the browser attaches it to the WS upgrade request automatically (same
+   *   as any other same-site HTTP request), so there's nothing for the
+   *   client to read or forward.
    *   `onAuthError` fires when the server closes the connection because the
    *   token was missing/invalid/expired (close code 4001) — distinct from an
    *   ordinary drop, which just reconnects. It does not change what happens
@@ -25,8 +29,7 @@ export class GameSocket {
 
   connect() {
     this.closedByUser = false;
-    const url = `${this.options.url}?token=${encodeURIComponent(this.options.token)}`;
-    const socket = new WebSocket(url);
+    const socket = new WebSocket(this.options.url);
     this.socket = socket;
 
     socket.onopen = () => {

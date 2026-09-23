@@ -58,11 +58,11 @@ export function ensureEmpireInfo(empireId) {
   const { empires, upsertEmpireInfo } = useWorldStore.getState();
   if (empires[empireId] || pendingEmpireLookups.has(empireId)) return;
 
-  const token = useAuthStore.getState().token;
-  if (!token) return;
+  const user = useAuthStore.getState().user;
+  if (!user) return;
 
   pendingEmpireLookups.add(empireId);
-  fetchPublicEmpire(token, empireId)
+  fetchPublicEmpire(empireId)
     .then((empire) => upsertEmpireInfo(empire))
     .catch(() => {
       // Empire may have been deleted, or the request raced a restart — the
