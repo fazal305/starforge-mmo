@@ -21,7 +21,8 @@ export default function ChatPanel({ send }) {
   const listRef = useRef(null);
 
   useEffect(() => {
-    if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
+    if (listRef.current)
+      listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages.length]);
 
   const submit = (e) => {
@@ -49,20 +50,47 @@ export default function ChatPanel({ send }) {
         role="log"
         aria-live="polite"
         aria-label="Chat messages"
-        style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "2px" }}
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: "2px",
+        }}
       >
         {messages.length === 0 && (
-          <p style={{ margin: 0, color: "var(--color-text-tertiary)", fontSize: "var(--font-size-xs)" }}>No messages yet.</p>
+          <p
+            style={{
+              margin: 0,
+              color: "var(--color-text-tertiary)",
+              fontSize: "var(--font-size-xs)",
+            }}
+          >
+            No messages yet.
+          </p>
         )}
         {messages.map((m, i) => (
-          <div key={i} style={{ fontSize: "var(--font-size-xs)", fontFamily: "var(--font-mono)" }}>
+          <div
+            key={i}
+            style={{
+              fontSize: "var(--font-size-xs)",
+              fontFamily: "var(--font-mono)",
+            }}
+          >
             <span style={{ color: "var(--color-accent)" }}>{m.from}</span>
             <span style={{ color: "var(--color-text-secondary)" }}>: </span>
             <span style={{ color: "var(--color-text-primary)" }}>{m.text}</span>
           </div>
         ))}
       </div>
-      <form onSubmit={submit} style={{ display: "flex", gap: "var(--space-2)", marginTop: "var(--space-2)" }}>
+      <form
+        onSubmit={submit}
+        style={{
+          display: "flex",
+          gap: "var(--space-2)",
+          marginTop: "var(--space-2)",
+        }}
+      >
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}

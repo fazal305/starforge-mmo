@@ -23,7 +23,11 @@ export const moveFleetCommandSchema = envelope(
 
 export const createFleetCommandSchema = envelope(
   "CREATE_FLEET",
-  z.object({ colonyId: z.string(), hullType: z.string(), count: z.number().int().min(1).max(50) }),
+  z.object({
+    colonyId: z.string(),
+    hullType: z.string(),
+    count: z.number().int().min(1).max(50),
+  }),
 );
 
 export const exploreSystemCommandSchema = envelope(

@@ -29,7 +29,10 @@ export default function AuthScreen() {
     clearSessionExpired();
     setBusy(true);
     try {
-      const result = mode === "login" ? await login({ username, password }) : await register({ username, email, password });
+      const result =
+        mode === "login"
+          ? await login({ username, password })
+          : await register({ username, email, password });
       setSession(result.user);
     } catch (err) {
       setError(err.message);
@@ -82,8 +85,12 @@ export default function AuthScreen() {
             aria-pressed={mode === "login"}
             style={{
               flex: 1,
-              background: mode === "login" ? "var(--color-accent-dim)" : "transparent",
-              color: mode === "login" ? "var(--color-text-primary)" : "var(--color-text-secondary)",
+              background:
+                mode === "login" ? "var(--color-accent-dim)" : "transparent",
+              color:
+                mode === "login"
+                  ? "var(--color-text-primary)"
+                  : "var(--color-text-secondary)",
               border: "1px solid var(--color-border-strong)",
               borderRadius: "var(--radius-sm)",
               padding: "var(--space-2)",
@@ -99,8 +106,12 @@ export default function AuthScreen() {
             aria-pressed={mode === "register"}
             style={{
               flex: 1,
-              background: mode === "register" ? "var(--color-accent-dim)" : "transparent",
-              color: mode === "register" ? "var(--color-text-primary)" : "var(--color-text-secondary)",
+              background:
+                mode === "register" ? "var(--color-accent-dim)" : "transparent",
+              color:
+                mode === "register"
+                  ? "var(--color-text-primary)"
+                  : "var(--color-text-secondary)",
               border: "1px solid var(--color-border-strong)",
               borderRadius: "var(--radius-sm)",
               padding: "var(--space-2)",
@@ -112,19 +123,58 @@ export default function AuthScreen() {
           </button>
         </div>
 
-        <label style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)", color: "var(--color-text-secondary)", fontSize: "var(--font-size-xs)" }}>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-1)",
+            color: "var(--color-text-secondary)",
+            fontSize: "var(--font-size-xs)",
+          }}
+        >
           Username
-          <input style={inputStyle} value={username} onChange={(e) => setUsername(e.target.value)} required minLength={3} maxLength={24} autoComplete="username" />
+          <input
+            style={inputStyle}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            minLength={3}
+            maxLength={24}
+            autoComplete="username"
+          />
         </label>
 
         {mode === "register" && (
-          <label style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)", color: "var(--color-text-secondary)", fontSize: "var(--font-size-xs)" }}>
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-1)",
+              color: "var(--color-text-secondary)",
+              fontSize: "var(--font-size-xs)",
+            }}
+          >
             Email
-            <input style={inputStyle} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+            <input
+              style={inputStyle}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
           </label>
         )}
 
-        <label style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)", color: "var(--color-text-secondary)", fontSize: "var(--font-size-xs)" }}>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-1)",
+            color: "var(--color-text-secondary)",
+            fontSize: "var(--font-size-xs)",
+          }}
+        >
           Password
           <input
             style={inputStyle}
@@ -133,12 +183,20 @@ export default function AuthScreen() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={8}
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
+            autoComplete={
+              mode === "login" ? "current-password" : "new-password"
+            }
           />
         </label>
 
         {(error || sessionExpired) && (
-          <div role="alert" style={{ color: "var(--color-danger)", fontSize: "var(--font-size-xs)" }}>
+          <div
+            role="alert"
+            style={{
+              color: "var(--color-danger)",
+              fontSize: "var(--font-size-xs)",
+            }}
+          >
             {error || "Your session has expired — please log in again"}
           </div>
         )}
@@ -158,7 +216,11 @@ export default function AuthScreen() {
             opacity: busy ? 0.7 : 1,
           }}
         >
-          {busy ? "Please wait…" : mode === "login" ? "Log in" : "Create account"}
+          {busy
+            ? "Please wait…"
+            : mode === "login"
+              ? "Log in"
+              : "Create account"}
         </button>
       </form>
     </div>

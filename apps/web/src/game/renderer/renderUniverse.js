@@ -27,7 +27,17 @@ const MIN_ZOOM_FOR_PLANET_DOTS = 0.6;
  * }} params
  */
 export function renderUniverse(ctx, params) {
-  const { camera, viewportW, viewportH, sectors, systems, selectedSystemId, hoveredSystemId, fleets, colors } = params;
+  const {
+    camera,
+    viewportW,
+    viewportH,
+    sectors,
+    systems,
+    selectedSystemId,
+    hoveredSystemId,
+    fleets,
+    colors,
+  } = params;
 
   ctx.save();
   ctx.clearRect(0, 0, viewportW, viewportH);
@@ -54,7 +64,12 @@ export function renderUniverse(ctx, params) {
 }
 
 function drawFleet(ctx, camera, viewportW, viewportH, fleet, colors) {
-  const pos = camera.worldToScreen(fleet.renderPosition.x, fleet.renderPosition.y, viewportW, viewportH);
+  const pos = camera.worldToScreen(
+    fleet.renderPosition.x,
+    fleet.renderPosition.y,
+    viewportW,
+    viewportH,
+  );
   const size = Math.max(3, 4 * Math.sqrt(camera.zoom));
 
   ctx.save();
@@ -77,11 +92,23 @@ function drawFleet(ctx, camera, viewportW, viewportH, fleet, colors) {
   ctx.restore();
 }
 
-function drawSectorGrid(ctx, camera, viewportW, viewportH, sectors, gridLineColor) {
+function drawSectorGrid(
+  ctx,
+  camera,
+  viewportW,
+  viewportH,
+  sectors,
+  gridLineColor,
+) {
   ctx.strokeStyle = gridLineColor;
   ctx.lineWidth = 1;
   for (const sector of sectors) {
-    const topLeft = camera.worldToScreen(sector.gx * SECTOR_SIZE, sector.gy * SECTOR_SIZE, viewportW, viewportH);
+    const topLeft = camera.worldToScreen(
+      sector.gx * SECTOR_SIZE,
+      sector.gy * SECTOR_SIZE,
+      viewportW,
+      viewportH,
+    );
     const size = SECTOR_SIZE * camera.zoom;
     ctx.strokeRect(topLeft.x, topLeft.y, size, size);
 
@@ -92,7 +119,14 @@ function drawSectorGrid(ctx, camera, viewportW, viewportH, sectors, gridLineColo
   }
 }
 
-function drawSystem(ctx, camera, viewportW, viewportH, system, { selected, hovered, colors }) {
+function drawSystem(
+  ctx,
+  camera,
+  viewportW,
+  viewportH,
+  system,
+  { selected, hovered, colors },
+) {
   const pos = camera.worldToScreen(system.x, system.y, viewportW, viewportH);
   const radius = Math.max(1.5, 2.2 * Math.sqrt(camera.zoom));
 
@@ -120,7 +154,15 @@ function drawSystem(ctx, camera, viewportW, viewportH, system, { selected, hover
 }
 
 /** Hit-tests a screen point against visible systems, returns the nearest within tolerance or null. */
-export function pickSystemAtScreenPoint(camera, viewportW, viewportH, systems, screenX, screenY, toleranceScreenPx = 8) {
+export function pickSystemAtScreenPoint(
+  camera,
+  viewportW,
+  viewportH,
+  systems,
+  screenX,
+  screenY,
+  toleranceScreenPx = 8,
+) {
   let closest = null;
   let closestDistSq = Infinity;
   for (const system of systems) {
@@ -128,7 +170,10 @@ export function pickSystemAtScreenPoint(camera, viewportW, viewportH, systems, s
     const dx = pos.x - screenX;
     const dy = pos.y - screenY;
     const distSq = dx * dx + dy * dy;
-    if (distSq <= toleranceScreenPx * toleranceScreenPx && distSq < closestDistSq) {
+    if (
+      distSq <= toleranceScreenPx * toleranceScreenPx &&
+      distSq < closestDistSq
+    ) {
       closest = system;
       closestDistSq = distSq;
     }

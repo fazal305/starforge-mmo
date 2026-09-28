@@ -21,7 +21,12 @@ const HANDLERS = {
 // Territory/fleet/chat/combat events are visible to the whole universe;
 // resource and research progress stay private to the owning connection.
 // This is the one place that decision is made, so no handler can get it wrong.
-const BROADCAST_EVENT_TYPES = new Set(["COLONY_UPDATED", "FLEET_UPDATED", "CHAT_MESSAGE", "COMBAT_RESOLVED"]);
+const BROADCAST_EVENT_TYPES = new Set([
+  "COLONY_UPDATED",
+  "FLEET_UPDATED",
+  "CHAT_MESSAGE",
+  "COMBAT_RESOLVED",
+]);
 
 /**
  * Every inbound WS message passes through here: parsed against the shared
@@ -46,7 +51,11 @@ export async function dispatchCommand(userId, rawCommand, username) {
     sendTo(userId, {
       type: "COMMAND_ACK",
       serverTime: Date.now(),
-      payload: { commandId: command.id, ok: false, error: `Not yet implemented: ${command.type}` },
+      payload: {
+        commandId: command.id,
+        ok: false,
+        error: `Not yet implemented: ${command.type}`,
+      },
     });
     return;
   }

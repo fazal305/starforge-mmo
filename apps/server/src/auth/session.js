@@ -3,7 +3,9 @@ import jwt from "jsonwebtoken";
 const AUTH_SECRET = process.env.AUTH_SECRET;
 
 if (!AUTH_SECRET) {
-  throw new Error("AUTH_SECRET is not set. Copy .env.example to .env and set a real secret.");
+  throw new Error(
+    "AUTH_SECRET is not set. Copy .env.example to .env and set a real secret.",
+  );
 }
 
 export const SESSION_COOKIE_NAME = "token";

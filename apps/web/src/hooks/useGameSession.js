@@ -70,23 +70,28 @@ export function useGameSession(authenticated, onReconnected, onAuthError) {
         if (event.type === "WORLD_TICK") {
           setLatency(Math.max(0, Date.now() - event.payload.serverTime));
           setTick(event.payload.tick);
-        } else if (event.type === "RESOURCE_UPDATED") applyResourceUpdate(event.payload);
-        else if (event.type === "RESEARCH_UPDATED") applyResearchUpdate(event.payload);
+        } else if (event.type === "RESOURCE_UPDATED")
+          applyResourceUpdate(event.payload);
+        else if (event.type === "RESEARCH_UPDATED")
+          applyResearchUpdate(event.payload);
         else if (event.type === "COLONY_UPDATED") {
-          const isNewColony = !useWorldStore.getState().colonies.some((c) => c.id === event.payload.id);
+          const isNewColony = !useWorldStore
+            .getState()
+            .colonies.some((c) => c.id === event.payload.id);
           applyColonyUpdate(event.payload);
           ensureEmpireInfo(event.payload.empireId);
           if (isNewColony) sound.discovery();
         } else if (event.type === "FLEET_UPDATED") {
           applyFleetUpdate(event.payload);
           ensureEmpireInfo(event.payload.empireId);
-        } else if (event.type === "PLAYER_JOINED") addPlayer(event.payload.playerId, event.payload.username);
-        else if (event.type === "PLAYER_LEFT") removePlayer(event.payload.playerId);
+        } else if (event.type === "PLAYER_JOINED")
+          addPlayer(event.payload.playerId, event.payload.username);
+        else if (event.type === "PLAYER_LEFT")
+          removePlayer(event.payload.playerId);
         else if (event.type === "CHAT_MESSAGE") {
           addChatMessage(event.payload);
           sound.notification();
-        }
-        else if (event.type === "COMBAT_RESOLVED") addBattle(event.payload);
+        } else if (event.type === "COMBAT_RESOLVED") addBattle(event.payload);
         else if (
           event.type === "COMMAND_ACK" &&
           event.payload.ok === false &&
@@ -126,4 +131,3 @@ export function useGameSession(authenticated, onReconnected, onAuthError) {
 
   return useCallback((command) => socketRef.current?.send(command), []);
 }
-

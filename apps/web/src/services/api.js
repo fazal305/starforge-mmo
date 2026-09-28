@@ -17,11 +17,17 @@ async function request(path, options = {}) {
 }
 
 export function register({ username, email, password }) {
-  return request("/auth/register", { method: "POST", body: JSON.stringify({ username, email, password }) });
+  return request("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ username, email, password }),
+  });
 }
 
 export function login({ username, password }) {
-  return request("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) });
+  return request("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  });
 }
 
 export function logout() {

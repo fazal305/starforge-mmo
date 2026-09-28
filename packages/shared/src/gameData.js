@@ -46,17 +46,80 @@ export const BUILDING_TYPES = {
 };
 
 export const SHIP_TYPES = {
-  scout: { name: "Scout", cost: { minerals: 50, energy: 0, credits: 80 }, speed: 400, attack: 5, defense: 5, hull: 20 },
-  destroyer: { name: "Destroyer", cost: { minerals: 150, energy: 50, credits: 200 }, speed: 250, attack: 20, defense: 15, hull: 80 },
-  cruiser: { name: "Cruiser", cost: { minerals: 300, energy: 100, credits: 400 }, speed: 150, attack: 50, defense: 40, hull: 200 },
+  scout: {
+    name: "Scout",
+    cost: { minerals: 50, energy: 0, credits: 80 },
+    speed: 400,
+    attack: 5,
+    defense: 5,
+    hull: 20,
+  },
+  destroyer: {
+    name: "Destroyer",
+    cost: { minerals: 150, energy: 50, credits: 200 },
+    speed: 250,
+    attack: 20,
+    defense: 15,
+    hull: 80,
+  },
+  cruiser: {
+    name: "Cruiser",
+    cost: { minerals: 300, energy: 100, credits: 400 },
+    speed: 150,
+    attack: 50,
+    defense: 40,
+    hull: 200,
+  },
 };
 
 export const RESEARCH_CATALOG = [
-  { id: "propulsion_1", category: "propulsion", name: "Basic Propulsion", costResearchPoints: 100, prerequisiteId: null },
-  { id: "propulsion_2", category: "propulsion", name: "Ion Drives", costResearchPoints: 250, prerequisiteId: "propulsion_1" },
-  { id: "weapons_1", category: "weapons", name: "Kinetic Weapons", costResearchPoints: 100, prerequisiteId: null },
-  { id: "weapons_2", category: "weapons", name: "Laser Weapons", costResearchPoints: 250, prerequisiteId: "weapons_1" },
-  { id: "defense_1", category: "defense", name: "Reinforced Hulls", costResearchPoints: 100, prerequisiteId: null },
-  { id: "economy_1", category: "economy", name: "Efficient Mining", costResearchPoints: 150, prerequisiteId: null },
-  { id: "exploration_1", category: "exploration", name: "Long-Range Sensors", costResearchPoints: 100, prerequisiteId: null },
+  {
+    id: "propulsion_1",
+    category: "propulsion",
+    name: "Basic Propulsion",
+    costResearchPoints: 100,
+    prerequisiteId: null,
+  },
+  {
+    id: "propulsion_2",
+    category: "propulsion",
+    name: "Ion Drives",
+    costResearchPoints: 250,
+    prerequisiteId: "propulsion_1",
+  },
+  {
+    id: "weapons_1",
+    category: "weapons",
+    name: "Kinetic Weapons",
+    costResearchPoints: 100,
+    prerequisiteId: null,
+  },
+  {
+    id: "weapons_2",
+    category: "weapons",
+    name: "Laser Weapons",
+    costResearchPoints: 250,
+    prerequisiteId: "weapons_1",
+  },
+  {
+    id: "defense_1",
+    category: "defense",
+    name: "Reinforced Hulls",
+    costResearchPoints: 100,
+    prerequisiteId: null,
+  },
+  {
+    id: "economy_1",
+    category: "economy",
+    name: "Efficient Mining",
+    costResearchPoints: 150,
+    prerequisiteId: null,
+  },
+  {
+    id: "exploration_1",
+    category: "exploration",
+    name: "Long-Range Sensors",
+    costResearchPoints: 100,
+    prerequisiteId: null,
+  },
 ];

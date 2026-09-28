@@ -43,7 +43,11 @@ export default function ColonyPanel({ send }) {
   const connected = useConnectionStore((s) => s.status === "CONNECTED");
 
   if (!selectedSystem) {
-    return <p style={{ margin: 0, color: "var(--color-text-secondary)" }}>Click a star on the map to select it.</p>;
+    return (
+      <p style={{ margin: 0, color: "var(--color-text-secondary)" }}>
+        Click a star on the map to select it.
+      </p>
+    );
   }
 
   const planetIds = selectedSystem.planets.map((p) => p.id);
@@ -51,19 +55,41 @@ export default function ColonyPanel({ send }) {
   const isMine = colony && colony.empireId === myEmpireId;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--space-4)",
+      }}
+    >
       <div>
         <h2 style={panelHeading}>Selected system</h2>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "var(--font-size-sm)", color: "var(--color-text-primary)" }}>
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "var(--font-size-sm)",
+            color: "var(--color-text-primary)",
+          }}
+        >
           {selectedSystem.id}
         </div>
-        <div style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-secondary)" }}>
-          {selectedSystem.starType} star · {selectedSystem.planets.length} planet{selectedSystem.planets.length === 1 ? "" : "s"}
+        <div
+          style={{
+            fontSize: "var(--font-size-xs)",
+            color: "var(--color-text-secondary)",
+          }}
+        >
+          {selectedSystem.starType} star · {selectedSystem.planets.length}{" "}
+          planet{selectedSystem.planets.length === 1 ? "" : "s"}
         </div>
       </div>
 
       {!colony && selectedSystem.planets.length > 0 && (
-        <button style={buttonStyle} disabled={!connected} onClick={() => send(foundColony(selectedSystem.planets[0].id))}>
+        <button
+          style={buttonStyle}
+          disabled={!connected}
+          onClick={() => send(foundColony(selectedSystem.planets[0].id))}
+        >
           Found colony on {selectedSystem.planets[0].id}
         </button>
       )}
@@ -71,9 +97,21 @@ export default function ColonyPanel({ send }) {
       {colony && !isMine && (
         <div>
           <h2 style={panelHeading}>Colony · {colony.planetId}</h2>
-          <p style={{ margin: 0, fontSize: "var(--font-size-xs)", color: "var(--color-text-secondary)" }}>
+          <p
+            style={{
+              margin: 0,
+              fontSize: "var(--font-size-xs)",
+              color: "var(--color-text-secondary)",
+            }}
+          >
             Held by{" "}
-            <span style={{ color: empires[colony.empireId]?.color ?? "var(--color-text-primary)" }}>
+            <span
+              style={{
+                color:
+                  empires[colony.empireId]?.color ??
+                  "var(--color-text-primary)",
+              }}
+            >
               {empires[colony.empireId]?.name ?? "an unknown empire"}
             </span>
           </p>
@@ -83,24 +121,66 @@ export default function ColonyPanel({ send }) {
       {colony && isMine && (
         <div>
           <h2 style={panelHeading}>Colony · {colony.planetId}</h2>
-          <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "var(--space-2)", marginBottom: "var(--space-3)" }}>
+          <ul
+            style={{
+              listStyle: "none",
+              margin: 0,
+              padding: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-2)",
+              marginBottom: "var(--space-3)",
+            }}
+          >
             {colony.buildings.length === 0 && (
-              <li style={{ color: "var(--color-text-secondary)", fontSize: "var(--font-size-xs)" }}>No buildings yet.</li>
+              <li
+                style={{
+                  color: "var(--color-text-secondary)",
+                  fontSize: "var(--font-size-xs)",
+                }}
+              >
+                No buildings yet.
+              </li>
             )}
             {colony.buildings.map((b) => (
-              <li key={b.id} style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-primary)", fontFamily: "var(--font-mono)" }}>
+              <li
+                key={b.id}
+                style={{
+                  fontSize: "var(--font-size-xs)",
+                  color: "var(--color-text-primary)",
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
                 {BUILDING_TYPES[b.type]?.name ?? b.type} (lvl {b.level})
-                {b.constructionCompletesAt && b.constructionCompletesAt > Date.now() && (
-                  <span style={{ color: "var(--color-warning)" }}> — building…</span>
-                )}
+                {b.constructionCompletesAt &&
+                  b.constructionCompletesAt > Date.now() && (
+                    <span style={{ color: "var(--color-warning)" }}>
+                      {" "}
+                      — building…
+                    </span>
+                  )}
               </li>
             ))}
           </ul>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-2)",
+            }}
+          >
             {Object.entries(BUILDING_TYPES).map(([type, def]) => (
-              <button key={type} style={buttonStyle} disabled={!connected} onClick={() => send(buildStructure(colony.id, type))}>
-                Build {def.name} <span style={{ color: "var(--color-text-secondary)" }}>({formatCost(def.cost)})</span>
+              <button
+                key={type}
+                style={buttonStyle}
+                disabled={!connected}
+                onClick={() => send(buildStructure(colony.id, type))}
+              >
+                Build {def.name}{" "}
+                <span style={{ color: "var(--color-text-secondary)" }}>
+                  ({formatCost(def.cost)})
+                </span>
               </button>
             ))}
           </div>

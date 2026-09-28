@@ -2,7 +2,13 @@ import { eq, and } from "drizzle-orm";
 import { SHIP_TYPES, UNIVERSE_SEED_DEFAULT } from "@starforge/shared";
 import { resolveSystemByPlanetId } from "@starforge/game-engine";
 import { db } from "../../database/client.js";
-import { colonies, buildings, fleets, ships, empires } from "../../database/schema.js";
+import {
+  colonies,
+  buildings,
+  fleets,
+  ships,
+  empires,
+} from "../../database/schema.js";
 import { getEmpireByUserId, toResourceBundle } from "../empire.js";
 
 /**
@@ -21,14 +27,19 @@ export async function handleCreateFleet(userId, payload) {
   const [colony] = await db
     .select()
     .from(colonies)
-    .where(and(eq(colonies.id, payload.colonyId), eq(colonies.empireId, empire.id)))
+    .where(
+      and(eq(colonies.id, payload.colonyId), eq(colonies.empireId, empire.id)),
+    )
     .limit(1);
-  if (!colony) return { ok: false, error: "Colony not found or not owned by you" };
+  if (!colony)
+    return { ok: false, error: "Colony not found or not owned by you" };
 
   const [shipyard] = await db
     .select()
     .from(buildings)
-    .where(and(eq(buildings.colonyId, colony.id), eq(buildings.type, "shipyard")))
+    .where(
+      and(eq(buildings.colonyId, colony.id), eq(buildings.type, "shipyard")),
+    )
     .limit(1);
   if (!shipyard || shipyard.constructionCompletesAt) {
     return { ok: false, error: "This colony has no completed shipyard" };
@@ -39,11 +50,18 @@ export async function handleCreateFleet(userId, payload) {
     minerals: (definition.cost.minerals ?? 0) * payload.count,
     energy: (definition.cost.energy ?? 0) * payload.count,
   };
-  if (empire.credits < totalCost.credits || empire.minerals < totalCost.minerals || empire.energy < totalCost.energy) {
+  if (
+    empire.credits < totalCost.credits ||
+    empire.minerals < totalCost.minerals ||
+    empire.energy < totalCost.energy
+  ) {
     return { ok: false, error: "Insufficient resources" };
   }
 
-  const system = resolveSystemByPlanetId(UNIVERSE_SEED_DEFAULT, colony.planetId);
+  const system = resolveSystemByPlanetId(
+    UNIVERSE_SEED_DEFAULT,
+    colony.planetId,
+  );
   if (!system) return { ok: false, error: "Could not resolve colony location" };
 
   const [updatedEmpire] = await db
@@ -58,12 +76,21 @@ export async function handleCreateFleet(userId, payload) {
 
   const [fleet] = await db
     .insert(fleets)
-    .values({ empireId: empire.id, positionX: system.x, positionY: system.y, status: "IDLE" })
+    .values({
+      empireId: empire.id,
+      positionX: system.x,
+      positionY: system.y,
+      status: "IDLE",
+    })
     .returning();
 
   const [ship] = await db
     .insert(ships)
-    .values({ fleetId: fleet.id, hullType: payload.hullType, count: payload.count })
+    .values({
+      fleetId: fleet.id,
+      hullType: payload.hullType,
+      count: payload.count,
+    })
     .returning();
 
   return {
@@ -72,7 +99,10 @@ export async function handleCreateFleet(userId, payload) {
       {
         type: "RESOURCE_UPDATED",
         serverTime: Date.now(),
-        payload: { empireId: empire.id, resources: toResourceBundle(updatedEmpire) },
+        payload: {
+          empireId: empire.id,
+          resources: toResourceBundle(updatedEmpire),
+        },
       },
       {
         type: "FLEET_UPDATED",

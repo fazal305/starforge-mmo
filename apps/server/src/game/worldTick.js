@@ -1,12 +1,24 @@
 import { eq, and, isNull, isNotNull, lte, sql } from "drizzle-orm";
-import { WORLD_TICK_MS, BUILDING_TYPES, RESEARCH_CATALOG } from "@starforge/shared";
+import {
+  WORLD_TICK_MS,
+  BUILDING_TYPES,
+  RESEARCH_CATALOG,
+} from "@starforge/shared";
 import { db } from "../database/client.js";
-import { buildings, colonies, empires, researchProgress, fleets } from "../database/schema.js";
+import {
+  buildings,
+  colonies,
+  empires,
+  researchProgress,
+  fleets,
+} from "../database/schema.js";
 import { broadcast, sendTo } from "../websocket/server.js";
 import { toResourceBundle } from "./empire.js";
 
 async function empireIdToUserIdMap() {
-  const rows = await db.select({ id: empires.id, userId: empires.userId }).from(empires);
+  const rows = await db
+    .select({ id: empires.id, userId: empires.userId })
+    .from(empires);
   return new Map(rows.map((r) => [r.id, r.userId]));
 }
 
@@ -15,13 +27,25 @@ let running = false; // overlap guard: skip a tick if the previous one is still 
 
 async function completeFinishedConstruction(now) {
   const completing = await db
-    .select({ buildingId: buildings.id, colonyId: buildings.colonyId, empireId: colonies.empireId })
+    .select({
+      buildingId: buildings.id,
+      colonyId: buildings.colonyId,
+      empireId: colonies.empireId,
+    })
     .from(buildings)
     .innerJoin(colonies, eq(buildings.colonyId, colonies.id))
-    .where(and(isNotNull(buildings.constructionCompletesAt), lte(buildings.constructionCompletesAt, now)));
+    .where(
+      and(
+        isNotNull(buildings.constructionCompletesAt),
+        lte(buildings.constructionCompletesAt, now),
+      ),
+    );
 
   for (const row of completing) {
-    await db.update(buildings).set({ constructionCompletesAt: null }).where(eq(buildings.id, row.buildingId));
+    await db
+      .update(buildings)
+      .set({ constructionCompletesAt: null })
+      .where(eq(buildings.id, row.buildingId));
   }
   return completing; // [{ buildingId, colonyId, empireId }]
 }
@@ -47,7 +71,12 @@ async function computeProductionAndActiveBuildings() {
   for (const row of activeRows) {
     const def = BUILDING_TYPES[row.type];
     if (def) {
-      const acc = productionByEmpire.get(row.empireId) ?? { credits: 0, minerals: 0, energy: 0, research: 0 };
+      const acc = productionByEmpire.get(row.empireId) ?? {
+        credits: 0,
+        minerals: 0,
+        energy: 0,
+        research: 0,
+      };
       acc.credits += (def.produces.credits ?? 0) * row.level;
       acc.minerals += (def.produces.minerals ?? 0) * row.level;
       acc.energy += (def.produces.energy ?? 0) * row.level;
@@ -55,7 +84,12 @@ async function computeProductionAndActiveBuildings() {
       productionByEmpire.set(row.empireId, acc);
     }
     const list = buildingsByColony.get(row.colonyId) ?? [];
-    list.push({ id: row.buildingId, type: row.type, level: row.level, constructionCompletesAt: null });
+    list.push({
+      id: row.buildingId,
+      type: row.type,
+      level: row.level,
+      constructionCompletesAt: null,
+    });
     buildingsByColony.set(row.colonyId, list);
   }
 
@@ -64,7 +98,8 @@ async function computeProductionAndActiveBuildings() {
 
 async function applyProduction(productionByEmpire, empireIdToUserId) {
   for (const [empireId, prod] of productionByEmpire) {
-    if (!prod.credits && !prod.minerals && !prod.energy && !prod.research) continue;
+    if (!prod.credits && !prod.minerals && !prod.energy && !prod.research)
+      continue;
     const [updated] = await db
       .update(empires)
       .set({
@@ -128,7 +163,10 @@ async function processArrivedFleets(now) {
 }
 
 async function advanceResearch(productionByEmpire, empireIdToUserId) {
-  const active = await db.select().from(researchProgress).where(isNull(researchProgress.unlockedAt));
+  const active = await db
+    .select()
+    .from(researchProgress)
+    .where(isNull(researchProgress.unlockedAt));
   for (const row of active) {
     const gained = productionByEmpire.get(row.empireId)?.research ?? 0;
     if (gained <= 0) continue;
@@ -143,7 +181,12 @@ async function advanceResearch(productionByEmpire, empireIdToUserId) {
     await db
       .update(researchProgress)
       .set({ progressPoints: newPoints, unlockedAt: unlocked ? now : null })
-      .where(and(eq(researchProgress.empireId, row.empireId), eq(researchProgress.technologyId, row.technologyId)));
+      .where(
+        and(
+          eq(researchProgress.empireId, row.empireId),
+          eq(researchProgress.technologyId, row.technologyId),
+        ),
+      );
 
     const userId = empireIdToUserId.get(row.empireId);
     if (userId) {
@@ -166,7 +209,8 @@ async function runTick() {
   const empireIdToUserId = await empireIdToUserIdMap();
 
   const completing = await completeFinishedConstruction(now);
-  const { productionByEmpire, buildingsByColony } = await computeProductionAndActiveBuildings();
+  const { productionByEmpire, buildingsByColony } =
+    await computeProductionAndActiveBuildings();
   await applyProduction(productionByEmpire, empireIdToUserId);
   await advanceResearch(productionByEmpire, empireIdToUserId);
   await processArrivedFleets(now);
@@ -193,7 +237,11 @@ export function startWorldTick() {
     running = true;
     try {
       tickCount += 1;
-      broadcast({ type: "WORLD_TICK", serverTime: Date.now(), payload: { tick: tickCount, serverTime: Date.now() } });
+      broadcast({
+        type: "WORLD_TICK",
+        serverTime: Date.now(),
+        payload: { tick: tickCount, serverTime: Date.now() },
+      });
       await runTick();
     } catch (err) {
       console.error("[worldTick] failed:", err);

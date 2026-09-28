@@ -18,7 +18,11 @@ export async function handleFoundColony(userId, payload) {
   const empire = await getEmpireByUserId(userId);
   if (!empire) return { ok: false, error: "No empire found for this account" };
 
-  const [existing] = await db.select().from(colonies).where(eq(colonies.planetId, payload.planetId)).limit(1);
+  const [existing] = await db
+    .select()
+    .from(colonies)
+    .where(eq(colonies.planetId, payload.planetId))
+    .limit(1);
   if (existing) {
     return { ok: false, error: "This planet already has a colony" };
   }
@@ -34,7 +38,12 @@ export async function handleFoundColony(userId, payload) {
       {
         type: "COLONY_UPDATED",
         serverTime: Date.now(),
-        payload: { id: colony.id, empireId: colony.empireId, planetId: colony.planetId, buildings: [] },
+        payload: {
+          id: colony.id,
+          empireId: colony.empireId,
+          planetId: colony.planetId,
+          buildings: [],
+        },
       },
     ],
   };

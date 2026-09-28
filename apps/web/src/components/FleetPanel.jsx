@@ -30,7 +30,11 @@ const buttonStyle = {
 };
 
 function shipyardColony(colonies) {
-  return colonies.find((c) => c.buildings.some((b) => b.type === "shipyard" && !b.constructionCompletesAt));
+  return colonies.find((c) =>
+    c.buildings.some(
+      (b) => b.type === "shipyard" && !b.constructionCompletesAt,
+    ),
+  );
 }
 
 export default function FleetPanel({ send }) {
@@ -57,7 +61,10 @@ export default function FleetPanel({ send }) {
       (rival) =>
         rival.empireId !== myEmpireId &&
         rival.status === "IDLE" &&
-        Math.hypot(rival.position.x - fleet.position.x, rival.position.y - fleet.position.y) <= CO_LOCATION_TOLERANCE,
+        Math.hypot(
+          rival.position.x - fleet.position.x,
+          rival.position.y - fleet.position.y,
+        ) <= CO_LOCATION_TOLERANCE,
     );
   }
 
@@ -66,11 +73,24 @@ export default function FleetPanel({ send }) {
       <h2 style={panelHeading}>Fleets</h2>
 
       {colony && (
-        <div style={{ display: "flex", gap: "var(--space-2)", marginBottom: "var(--space-3)", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "var(--space-2)",
+            marginBottom: "var(--space-3)",
+            alignItems: "center",
+          }}
+        >
           <select
             value={hullType}
             onChange={(e) => setHullType(e.target.value)}
-            style={{ background: "var(--color-surface-elevated)", color: "var(--color-text-primary)", border: "1px solid var(--color-border-strong)", borderRadius: "var(--radius-sm)", padding: "var(--space-1)" }}
+            style={{
+              background: "var(--color-surface-elevated)",
+              color: "var(--color-text-primary)",
+              border: "1px solid var(--color-border-strong)",
+              borderRadius: "var(--radius-sm)",
+              padding: "var(--space-1)",
+            }}
           >
             {Object.entries(SHIP_TYPES).map(([type, def]) => (
               <option key={type} value={type}>
@@ -83,23 +103,59 @@ export default function FleetPanel({ send }) {
             min={1}
             max={50}
             value={count}
-            onChange={(e) => setCount(Math.max(1, Math.min(50, Number(e.target.value))))}
-            style={{ width: 48, background: "var(--color-surface-elevated)", color: "var(--color-text-primary)", border: "1px solid var(--color-border-strong)", borderRadius: "var(--radius-sm)", padding: "var(--space-1)" }}
+            onChange={(e) =>
+              setCount(Math.max(1, Math.min(50, Number(e.target.value))))
+            }
+            style={{
+              width: 48,
+              background: "var(--color-surface-elevated)",
+              color: "var(--color-text-primary)",
+              border: "1px solid var(--color-border-strong)",
+              borderRadius: "var(--radius-sm)",
+              padding: "var(--space-1)",
+            }}
           />
-          <button style={buttonStyle} disabled={!connected} onClick={() => send(createFleet(colony.id, hullType, count))}>
+          <button
+            style={buttonStyle}
+            disabled={!connected}
+            onClick={() => send(createFleet(colony.id, hullType, count))}
+          >
             Build
           </button>
         </div>
       )}
       {!colony && (
-        <p style={{ margin: 0, marginBottom: "var(--space-3)", color: "var(--color-text-tertiary)", fontSize: "var(--font-size-xs)" }}>
+        <p
+          style={{
+            margin: 0,
+            marginBottom: "var(--space-3)",
+            color: "var(--color-text-tertiary)",
+            fontSize: "var(--font-size-xs)",
+          }}
+        >
           Build a shipyard at a colony to construct ships.
         </p>
       )}
 
-      <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+      <ul
+        style={{
+          listStyle: "none",
+          margin: 0,
+          padding: 0,
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--space-2)",
+        }}
+      >
         {fleets.length === 0 && (
-          <li style={{ color: "var(--color-text-tertiary)", fontSize: "var(--font-size-xs)" }}>No fleets yet.</li>
+          <li
+            style={{
+              color: "var(--color-text-tertiary)",
+              fontSize: "var(--font-size-xs)",
+            }}
+          >
+            No fleets yet.
+          </li>
         )}
         {fleets.map((fleet) => (
           <li
@@ -117,21 +173,50 @@ export default function FleetPanel({ send }) {
           >
             <div>
               Fleet {fleet.id.slice(0, 8)} —{" "}
-              <span style={{ color: fleet.status === "MOVING" ? "var(--color-warning)" : "var(--color-text-secondary)" }}>
+              <span
+                style={{
+                  color:
+                    fleet.status === "MOVING"
+                      ? "var(--color-warning)"
+                      : "var(--color-text-secondary)",
+                }}
+              >
                 {fleet.status}
               </span>
             </div>
             <div style={{ color: "var(--color-text-secondary)" }}>
-              {(fleet.ships ?? []).map((s) => `${s.count}x ${s.hullType}`).join(", ") || "…"}
+              {(fleet.ships ?? [])
+                .map((s) => `${s.count}x ${s.hullType}`)
+                .join(", ") || "…"}
             </div>
             {fleet.id === selectedFleetId && fleet.status === "IDLE" && (
-              <div style={{ marginTop: "var(--space-2)", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+              <div
+                style={{
+                  marginTop: "var(--space-2)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "var(--space-2)",
+                }}
+              >
                 {awaitingMoveOrder ? (
-                  <button style={buttonStyle} onClick={(e) => { e.stopPropagation(); cancelMoveOrder(); }}>
+                  <button
+                    style={buttonStyle}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      cancelMoveOrder();
+                    }}
+                  >
                     Cancel (click map to set destination)
                   </button>
                 ) : (
-                  <button style={buttonStyle} disabled={!connected} onClick={(e) => { e.stopPropagation(); beginMoveOrder(); }}>
+                  <button
+                    style={buttonStyle}
+                    disabled={!connected}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      beginMoveOrder();
+                    }}
+                  >
                     Move fleet…
                   </button>
                 )}
@@ -139,10 +224,19 @@ export default function FleetPanel({ send }) {
                   <button
                     key={target.id}
                     disabled={!connected}
-                    onClick={(e) => { e.stopPropagation(); send(attackFleet(fleet.id, target.id)); }}
-                    style={{ ...buttonStyle, background: "rgba(226, 85, 74, 0.15)", borderColor: "var(--color-danger)", color: "var(--color-danger)" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      send(attackFleet(fleet.id, target.id));
+                    }}
+                    style={{
+                      ...buttonStyle,
+                      background: "rgba(226, 85, 74, 0.15)",
+                      borderColor: "var(--color-danger)",
+                      color: "var(--color-danger)",
+                    }}
                   >
-                    Attack {empires[target.empireId]?.name ?? "unknown empire"}'s fleet
+                    Attack {empires[target.empireId]?.name ?? "unknown empire"}
+                    's fleet
                   </button>
                 ))}
               </div>

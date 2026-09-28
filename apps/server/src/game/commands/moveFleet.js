@@ -19,8 +19,13 @@ export async function handleMoveFleet(userId, payload) {
     .from(fleets)
     .where(and(eq(fleets.id, payload.fleetId), eq(fleets.empireId, empire.id)))
     .limit(1);
-  if (!fleet) return { ok: false, error: "Fleet not found or not owned by you" };
-  if (fleet.status !== "IDLE") return { ok: false, error: `Fleet is currently ${fleet.status.toLowerCase()}` };
+  if (!fleet)
+    return { ok: false, error: "Fleet not found or not owned by you" };
+  if (fleet.status !== "IDLE")
+    return {
+      ok: false,
+      error: `Fleet is currently ${fleet.status.toLowerCase()}`,
+    };
 
   const dx = payload.destination.x - fleet.positionX;
   const dy = payload.destination.y - fleet.positionY;
@@ -32,9 +37,15 @@ export async function handleMoveFleet(userId, payload) {
     return { ok: false, error: "Already there" };
   }
 
-  const fleetShips = await db.select().from(ships).where(eq(ships.fleetId, fleet.id));
-  if (fleetShips.length === 0) return { ok: false, error: "Fleet has no ships" };
-  const speed = Math.min(...fleetShips.map((s) => SHIP_TYPES[s.hullType]?.speed ?? 100));
+  const fleetShips = await db
+    .select()
+    .from(ships)
+    .where(eq(ships.fleetId, fleet.id));
+  if (fleetShips.length === 0)
+    return { ok: false, error: "Fleet has no ships" };
+  const speed = Math.min(
+    ...fleetShips.map((s) => SHIP_TYPES[s.hullType]?.speed ?? 100),
+  );
 
   const etaMs = Math.round((distance / speed) * 1000);
   const departedAt = new Date();

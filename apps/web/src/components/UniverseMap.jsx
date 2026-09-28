@@ -2,9 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { UNIVERSE_SEED_DEFAULT } from "@starforge/shared";
 import { Camera } from "../game/camera/Camera.js";
 import { SectorCache } from "../game/world/sectorCache.js";
-import { renderUniverse, pickSystemAtScreenPoint } from "../game/renderer/renderUniverse.js";
+import {
+  renderUniverse,
+  pickSystemAtScreenPoint,
+} from "../game/renderer/renderUniverse.js";
 import { useUniverseStore } from "../stores/universeStore.js";
-import { useFleetStore, interpolateFleetPosition } from "../stores/fleetStore.js";
+import {
+  useFleetStore,
+  interpolateFleetPosition,
+} from "../stores/fleetStore.js";
 import { useWorldStore } from "../stores/worldStore.js";
 import { useEmpireStore } from "../stores/empireStore.js";
 import { useConnectionStore } from "../stores/connectionStore.js";
@@ -18,9 +24,13 @@ const STATS_UPDATE_INTERVAL_MS = 500;
 function readThemeColors() {
   const style = getComputedStyle(document.documentElement);
   return {
-    background: style.getPropertyValue("--color-background").trim() || "#05070b",
-    gridLine: style.getPropertyValue("--map-grid-line").trim() || "rgba(90,110,140,0.12)",
-    textSecondary: style.getPropertyValue("--color-text-secondary").trim() || "#8a94a8",
+    background:
+      style.getPropertyValue("--color-background").trim() || "#05070b",
+    gridLine:
+      style.getPropertyValue("--map-grid-line").trim() ||
+      "rgba(90,110,140,0.12)",
+    textSecondary:
+      style.getPropertyValue("--color-text-secondary").trim() || "#8a94a8",
     accent: style.getPropertyValue("--color-accent").trim() || "#4da8ff",
   };
 }
@@ -31,8 +41,17 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
   const cameraRef = useRef(new Camera({ zoom: 0.35 }));
   const cacheRef = useRef(new SectorCache(UNIVERSE_SEED_DEFAULT));
   const colorsRef = useRef(readThemeColors());
-  const pointerStateRef = useRef({ dragging: false, moved: false, lastX: 0, lastY: 0 });
-  const [stats, setStats] = useState({ fps: 0, visibleSystems: 0, cachedSectors: 0 });
+  const pointerStateRef = useRef({
+    dragging: false,
+    moved: false,
+    lastX: 0,
+    lastY: 0,
+  });
+  const [stats, setStats] = useState({
+    fps: 0,
+    visibleSystems: 0,
+    cachedSectors: 0,
+  });
 
   const setSelectedSystem = useUniverseStore((s) => s.setSelectedSystem);
   const setHoveredSystem = useUniverseStore((s) => s.setHoveredSystem);
@@ -94,8 +113,17 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
           heading = Math.atan2(dx, -dy);
         }
         const isMine = fleet.empireId === myEmpireId;
-        const color = isMine ? colorsRef.current.accent : (empires[fleet.empireId]?.color ?? "#8a94a8");
-        return { ...fleet, renderPosition, heading, selected: fleet.id === selectedFleetId, color, isMine };
+        const color = isMine
+          ? colorsRef.current.accent
+          : (empires[fleet.empireId]?.color ?? "#8a94a8");
+        return {
+          ...fleet,
+          renderPosition,
+          heading,
+          selected: fleet.id === selectedFleetId,
+          color,
+          isMine,
+        };
       });
 
       renderUniverse(ctx, {
@@ -126,7 +154,12 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
     rafId = requestAnimationFrame(frame);
 
     const handlePointerDown = (e) => {
-      pointerStateRef.current = { dragging: true, moved: false, lastX: e.clientX, lastY: e.clientY };
+      pointerStateRef.current = {
+        dragging: true,
+        moved: false,
+        lastX: e.clientX,
+        lastY: e.clientY,
+      };
       try {
         canvas.setPointerCapture(e.pointerId);
       } catch {
@@ -152,7 +185,14 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
 
       const bounds = cameraRef.current.getVisibleWorldBounds(width, height, 64);
       const { systems } = cacheRef.current.getVisible(bounds);
-      const hit = pickSystemAtScreenPoint(cameraRef.current, width, height, systems, x, y);
+      const hit = pickSystemAtScreenPoint(
+        cameraRef.current,
+        width,
+        height,
+        systems,
+        x,
+        y,
+      );
       const current = useUniverseStore.getState().hoveredSystemId;
       const nextId = hit?.id ?? null;
       if (nextId !== current) setHoveredSystem(nextId);
@@ -170,22 +210,49 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        const { awaitingMoveOrder, selectedFleetId, cancelMoveOrder } = useFleetStore.getState();
+        const { awaitingMoveOrder, selectedFleetId, cancelMoveOrder } =
+          useFleetStore.getState();
         if (awaitingMoveOrder && selectedFleetId) {
-          const destination = cameraRef.current.screenToWorld(x, y, width, height);
+          const destination = cameraRef.current.screenToWorld(
+            x,
+            y,
+            width,
+            height,
+          );
           send?.(moveFleet(selectedFleetId, destination));
           cancelMoveOrder();
-          pointerStateRef.current = { dragging: false, moved: false, lastX: 0, lastY: 0 };
+          pointerStateRef.current = {
+            dragging: false,
+            moved: false,
+            lastX: 0,
+            lastY: 0,
+          };
           return;
         }
 
-        const bounds = cameraRef.current.getVisibleWorldBounds(width, height, 64);
+        const bounds = cameraRef.current.getVisibleWorldBounds(
+          width,
+          height,
+          64,
+        );
         const { systems } = cacheRef.current.getVisible(bounds);
-        const hit = pickSystemAtScreenPoint(cameraRef.current, width, height, systems, x, y);
+        const hit = pickSystemAtScreenPoint(
+          cameraRef.current,
+          width,
+          height,
+          systems,
+          x,
+          y,
+        );
         setSelectedSystem(hit ?? null);
         if (hit) sound.select();
       }
-      pointerStateRef.current = { dragging: false, moved: false, lastX: 0, lastY: 0 };
+      pointerStateRef.current = {
+        dragging: false,
+        moved: false,
+        lastX: 0,
+        lastY: 0,
+      };
     };
 
     const handleWheel = (e) => {
@@ -256,7 +323,10 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
   }, [setSelectedSystem, setHoveredSystem, send]);
 
   return (
-    <div ref={containerRef} style={{ position: "relative", flex: 1, overflow: "hidden" }}>
+    <div
+      ref={containerRef}
+      style={{ position: "relative", flex: 1, overflow: "hidden" }}
+    >
       <canvas
         ref={canvasRef}
         role="application"
@@ -288,7 +358,10 @@ export default function UniverseMap({ debugOverlayVisible, send }) {
           <div>Server tick: {tick}</div>
           <div>Latency: {latencyMs === null ? "—" : `${latencyMs}ms`}</div>
           <div>Players online: {onlineCount}</div>
-          <div>Empire: {myEmpireIdForOverlay ? myEmpireIdForOverlay.slice(0, 8) : "—"}</div>
+          <div>
+            Empire:{" "}
+            {myEmpireIdForOverlay ? myEmpireIdForOverlay.slice(0, 8) : "—"}
+          </div>
         </div>
       )}
     </div>

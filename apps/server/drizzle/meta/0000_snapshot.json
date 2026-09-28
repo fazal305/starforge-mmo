@@ -40,12 +40,8 @@
           "name": "battle_logs_battle_id_battles_id_fk",
           "tableFrom": "battle_logs",
           "tableTo": "battles",
-          "columnsFrom": [
-            "battle_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["battle_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -144,12 +140,8 @@
           "name": "buildings_colony_id_colonies_id_fk",
           "tableFrom": "buildings",
           "tableTo": "colonies",
-          "columnsFrom": [
-            "colony_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["colony_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -203,12 +195,8 @@
           "name": "chat_messages_sender_user_id_users_id_fk",
           "tableFrom": "chat_messages",
           "tableTo": "users",
-          "columnsFrom": [
-            "sender_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["sender_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -256,12 +244,8 @@
           "name": "colonies_empire_id_empires_id_fk",
           "tableFrom": "colonies",
           "tableTo": "empires",
-          "columnsFrom": [
-            "empire_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["empire_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -356,12 +340,8 @@
           "name": "empires_user_id_users_id_fk",
           "tableFrom": "empires",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -491,12 +471,8 @@
           "name": "fleets_empire_id_empires_id_fk",
           "tableFrom": "fleets",
           "tableTo": "empires",
-          "columnsFrom": [
-            "empire_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["empire_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -586,12 +562,8 @@
           "name": "research_progress_empire_id_empires_id_fk",
           "tableFrom": "research_progress",
           "tableTo": "empires",
-          "columnsFrom": [
-            "empire_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["empire_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -599,12 +571,8 @@
           "name": "research_progress_technology_id_research_id_fk",
           "tableFrom": "research_progress",
           "tableTo": "research",
-          "columnsFrom": [
-            "technology_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["technology_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -612,10 +580,7 @@
       "compositePrimaryKeys": {
         "research_progress_empire_id_technology_id_pk": {
           "name": "research_progress_empire_id_technology_id_pk",
-          "columns": [
-            "empire_id",
-            "technology_id"
-          ]
+          "columns": ["empire_id", "technology_id"]
         }
       },
       "uniqueConstraints": {},
@@ -660,12 +625,8 @@
           "name": "ships_fleet_id_fleets_id_fk",
           "tableFrom": "ships",
           "tableTo": "fleets",
-          "columnsFrom": [
-            "fleet_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["fleet_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -706,12 +667,8 @@
           "name": "system_states_owner_empire_id_empires_id_fk",
           "tableFrom": "system_states",
           "tableTo": "empires",
-          "columnsFrom": [
-            "owner_empire_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_empire_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -766,16 +723,12 @@
         "users_username_unique": {
           "name": "users_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

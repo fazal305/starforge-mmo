@@ -34,12 +34,24 @@ export default class ErrorBoundary extends Component {
           textAlign: "center",
         }}
       >
-        <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "var(--font-size-lg)" }}>
+        <h1
+          style={{
+            margin: 0,
+            fontFamily: "var(--font-display)",
+            fontSize: "var(--font-size-lg)",
+          }}
+        >
           Something broke
         </h1>
-        <p style={{ margin: 0, color: "var(--color-text-secondary)", maxWidth: 420 }}>
-          The interface hit an unexpected error. Your empire is safe — it lives on the server. Reloading should
-          bring you back to where you left off.
+        <p
+          style={{
+            margin: 0,
+            color: "var(--color-text-secondary)",
+            maxWidth: 420,
+          }}
+        >
+          The interface hit an unexpected error. Your empire is safe — it lives
+          on the server. Reloading should bring you back to where you left off.
         </p>
         <button
           type="button"

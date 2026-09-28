@@ -36,10 +36,30 @@ function playTones(tones) {
 }
 
 export const sound = {
-  click: () => playTones([{ freq: 520, duration: 0.05, type: "square", gain: 0.04 }]),
-  select: () => playTones([{ freq: 660, duration: 0.07, type: "sine", gain: 0.05 }]),
-  notification: () => playTones([{ freq: 880, duration: 0.08 }, { freq: 1100, duration: 0.1 }]),
-  discovery: () => playTones([{ freq: 440, duration: 0.1 }, { freq: 660, duration: 0.1 }, { freq: 880, duration: 0.15 }]),
-  combatWin: () => playTones([{ freq: 523, duration: 0.09 }, { freq: 659, duration: 0.09 }, { freq: 784, duration: 0.18 }]),
-  combatLoss: () => playTones([{ freq: 330, duration: 0.15, type: "sawtooth", gain: 0.05 }, { freq: 220, duration: 0.25, type: "sawtooth", gain: 0.05 }]),
+  click: () =>
+    playTones([{ freq: 520, duration: 0.05, type: "square", gain: 0.04 }]),
+  select: () =>
+    playTones([{ freq: 660, duration: 0.07, type: "sine", gain: 0.05 }]),
+  notification: () =>
+    playTones([
+      { freq: 880, duration: 0.08 },
+      { freq: 1100, duration: 0.1 },
+    ]),
+  discovery: () =>
+    playTones([
+      { freq: 440, duration: 0.1 },
+      { freq: 660, duration: 0.1 },
+      { freq: 880, duration: 0.15 },
+    ]),
+  combatWin: () =>
+    playTones([
+      { freq: 523, duration: 0.09 },
+      { freq: 659, duration: 0.09 },
+      { freq: 784, duration: 0.18 },
+    ]),
+  combatLoss: () =>
+    playTones([
+      { freq: 330, duration: 0.15, type: "sawtooth", gain: 0.05 },
+      { freq: 220, duration: 0.25, type: "sawtooth", gain: 0.05 },
+    ]),
 };

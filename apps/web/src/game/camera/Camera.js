@@ -47,13 +47,23 @@ export class Camera {
   }
 
   getVisibleWorldBounds(viewportW, viewportH, bufferScreenPx = 0) {
-    const topLeft = this.screenToWorld(-bufferScreenPx, -bufferScreenPx, viewportW, viewportH);
+    const topLeft = this.screenToWorld(
+      -bufferScreenPx,
+      -bufferScreenPx,
+      viewportW,
+      viewportH,
+    );
     const bottomRight = this.screenToWorld(
       viewportW + bufferScreenPx,
       viewportH + bufferScreenPx,
       viewportW,
       viewportH,
     );
-    return { minX: topLeft.x, minY: topLeft.y, maxX: bottomRight.x, maxY: bottomRight.y };
+    return {
+      minX: topLeft.x,
+      minY: topLeft.y,
+      maxX: bottomRight.x,
+      maxY: bottomRight.y,
+    };
   }
 }

@@ -11,7 +11,10 @@ import { getEmpireByUserId, toResourceBundle } from "../empire.js";
 export async function handleBuildStructure(userId, payload) {
   const definition = BUILDING_TYPES[payload.buildingType];
   if (!definition) {
-    return { ok: false, error: `Unknown building type: ${payload.buildingType}` };
+    return {
+      ok: false,
+      error: `Unknown building type: ${payload.buildingType}`,
+    };
   }
 
   const empire = await getEmpireByUserId(userId);
@@ -20,14 +23,20 @@ export async function handleBuildStructure(userId, payload) {
   const [colony] = await db
     .select()
     .from(colonies)
-    .where(and(eq(colonies.id, payload.colonyId), eq(colonies.empireId, empire.id)))
+    .where(
+      and(eq(colonies.id, payload.colonyId), eq(colonies.empireId, empire.id)),
+    )
     .limit(1);
   if (!colony) {
     return { ok: false, error: "Colony not found or not owned by you" };
   }
 
   const cost = definition.cost;
-  if (empire.credits < (cost.credits ?? 0) || empire.minerals < (cost.minerals ?? 0) || empire.energy < (cost.energy ?? 0)) {
+  if (
+    empire.credits < (cost.credits ?? 0) ||
+    empire.minerals < (cost.minerals ?? 0) ||
+    empire.energy < (cost.energy ?? 0)
+  ) {
     return { ok: false, error: "Insufficient resources" };
   }
 
@@ -45,7 +54,12 @@ export async function handleBuildStructure(userId, payload) {
 
   const [building] = await db
     .insert(buildings)
-    .values({ colonyId: colony.id, type: payload.buildingType, level: 1, constructionCompletesAt })
+    .values({
+      colonyId: colony.id,
+      type: payload.buildingType,
+      level: 1,
+      constructionCompletesAt,
+    })
     .returning();
 
   return {
@@ -54,7 +68,10 @@ export async function handleBuildStructure(userId, payload) {
       {
         type: "RESOURCE_UPDATED",
         serverTime: Date.now(),
-        payload: { empireId: empire.id, resources: toResourceBundle(updatedEmpire) },
+        payload: {
+          empireId: empire.id,
+          resources: toResourceBundle(updatedEmpire),
+        },
       },
       {
         type: "COLONY_UPDATED",
@@ -68,7 +85,8 @@ export async function handleBuildStructure(userId, payload) {
               id: building.id,
               type: building.type,
               level: building.level,
-              constructionCompletesAt: building.constructionCompletesAt.getTime(),
+              constructionCompletesAt:
+                building.constructionCompletesAt.getTime(),
             },
           ],
         },

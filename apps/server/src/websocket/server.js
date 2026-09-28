@@ -58,7 +58,12 @@ export function createGameWebSocketServer(httpServer, onCommand) {
     }
 
     /** @type {Connection} */
-    const conn = { socket, userId: claims.userId, username: claims.username, isAlive: true };
+    const conn = {
+      socket,
+      userId: claims.userId,
+      username: claims.username,
+      isAlive: true,
+    };
 
     // Back-fill the roster for the newcomer before anyone else's join event
     // reaches them, so their presence list starts complete rather than

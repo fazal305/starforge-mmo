@@ -20,19 +20,36 @@ export const useWorldStore = create((set) => ({
       fleets,
     }),
 
-  upsertEmpireInfo: (empire) => set((s) => ({ empires: { ...s.empires, [empire.id]: empire } })),
+  upsertEmpireInfo: (empire) =>
+    set((s) => ({ empires: { ...s.empires, [empire.id]: empire } })),
 
   applyColonyUpdate: (payload) =>
     set((s) => {
       const idx = s.colonies.findIndex((c) => c.id === payload.id);
       if (idx === -1) {
-        return { colonies: [...s.colonies, { id: payload.id, empireId: payload.empireId, planetId: payload.planetId, buildings: payload.buildings }] };
+        return {
+          colonies: [
+            ...s.colonies,
+            {
+              id: payload.id,
+              empireId: payload.empireId,
+              planetId: payload.planetId,
+              buildings: payload.buildings,
+            },
+          ],
+        };
       }
       const existing = s.colonies[idx];
-      const buildingsById = new Map((existing.buildings ?? []).map((b) => [b.id, b]));
+      const buildingsById = new Map(
+        (existing.buildings ?? []).map((b) => [b.id, b]),
+      );
       for (const b of payload.buildings) buildingsById.set(b.id, b);
       const colonies = [...s.colonies];
-      colonies[idx] = { ...existing, planetId: payload.planetId || existing.planetId, buildings: [...buildingsById.values()] };
+      colonies[idx] = {
+        ...existing,
+        planetId: payload.planetId || existing.planetId,
+        buildings: [...buildingsById.values()],
+      };
       return { colonies };
     }),
 
@@ -42,7 +59,10 @@ export const useWorldStore = create((set) => ({
         return { fleets: s.fleets.filter((f) => f.id !== payload.id) };
       }
       const idx = s.fleets.findIndex((f) => f.id === payload.id);
-      if (idx === -1) return { fleets: [...s.fleets, { ...payload, ships: payload.ships ?? [] }] };
+      if (idx === -1)
+        return {
+          fleets: [...s.fleets, { ...payload, ships: payload.ships ?? [] }],
+        };
       const fleets = [...s.fleets];
       fleets[idx] = { ...fleets[idx], ...payload };
       return { fleets };

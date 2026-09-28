@@ -15,7 +15,14 @@ universeRouter.use(requireAuth);
  */
 universeRouter.get("/active", async (_req, res) => {
   const [allEmpires, allColonies, allFleets, allShips] = await Promise.all([
-    db.select({ id: empires.id, name: empires.name, color: empires.color, faction: empires.faction }).from(empires),
+    db
+      .select({
+        id: empires.id,
+        name: empires.name,
+        color: empires.color,
+        faction: empires.faction,
+      })
+      .from(empires),
     db.select().from(colonies),
     db.select().from(fleets),
     db.select().from(ships),
@@ -23,17 +30,28 @@ universeRouter.get("/active", async (_req, res) => {
 
   const shipsByFleet = {};
   for (const ship of allShips) {
-    (shipsByFleet[ship.fleetId] ??= []).push({ id: ship.id, hullType: ship.hullType, count: ship.count });
+    (shipsByFleet[ship.fleetId] ??= []).push({
+      id: ship.id,
+      hullType: ship.hullType,
+      count: ship.count,
+    });
   }
 
   res.json({
     empires: allEmpires,
-    colonies: allColonies.map((c) => ({ id: c.id, empireId: c.empireId, planetId: c.planetId })),
+    colonies: allColonies.map((c) => ({
+      id: c.id,
+      empireId: c.empireId,
+      planetId: c.planetId,
+    })),
     fleets: allFleets.map((f) => ({
       id: f.id,
       empireId: f.empireId,
       position: { x: f.positionX, y: f.positionY },
-      destination: f.destinationX !== null ? { x: f.destinationX, y: f.destinationY } : null,
+      destination:
+        f.destinationX !== null
+          ? { x: f.destinationX, y: f.destinationY }
+          : null,
       departedAt: f.departedAt ? f.departedAt.getTime() : null,
       etaMs: f.etaMs,
       status: f.status,
@@ -45,7 +63,12 @@ universeRouter.get("/active", async (_req, res) => {
 /** Lazy fallback: identity for an empire the client hasn't seen in its directory yet (e.g. one that registered after the client connected). */
 universeRouter.get("/empires/:id", async (req, res) => {
   const [empire] = await db
-    .select({ id: empires.id, name: empires.name, color: empires.color, faction: empires.faction })
+    .select({
+      id: empires.id,
+      name: empires.name,
+      color: empires.color,
+      faction: empires.faction,
+    })
     .from(empires)
     .where(eq(empires.id, req.params.id))
     .limit(1);

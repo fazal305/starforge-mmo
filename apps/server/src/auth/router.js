@@ -4,13 +4,21 @@ import { db } from "../database/client.js";
 import { users } from "../database/schema.js";
 import { eq, or } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "./password.js";
-import { signSession, setSessionCookie, clearSessionCookie } from "./session.js";
+import {
+  signSession,
+  setSessionCookie,
+  clearSessionCookie,
+} from "./session.js";
 import { createDefaultEmpire } from "../game/empire.js";
 
 export const authRouter = Router();
 
 const registerSchema = z.object({
-  username: z.string().min(3).max(24).regex(/^[a-zA-Z0-9_]+$/),
+  username: z
+    .string()
+    .min(3)
+    .max(24)
+    .regex(/^[a-zA-Z0-9_]+$/),
   email: z.string().email(),
   password: z.string().min(8).max(200),
 });
@@ -18,7 +26,9 @@ const registerSchema = z.object({
 authRouter.post("/register", async (req, res) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
+    return res
+      .status(400)
+      .json({ error: "Invalid input", details: parsed.error.flatten() });
   }
   const { username, email, password } = parsed.data;
 
@@ -61,7 +71,11 @@ authRouter.post("/login", async (req, res) => {
   }
   const { username, password } = parsed.data;
 
-  const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.username, username))
+    .limit(1);
   if (!user || !(await verifyPassword(user.passwordHash, password))) {
     return res.status(401).json({ error: "Invalid credentials" });
   }

@@ -3,8 +3,22 @@ import { createRng, pick, intBetween } from "./rng.js";
 /** World-space size of one sector, in map units. */
 export const SECTOR_SIZE = 4000;
 
-export const STAR_TYPES = ["blue", "white", "yellow", "orange", "red", "neutron"];
-export const PLANET_KINDS = ["rocky", "gas-giant", "ice", "barren", "oceanic", "volcanic"];
+export const STAR_TYPES = [
+  "blue",
+  "white",
+  "yellow",
+  "orange",
+  "red",
+  "neutron",
+];
+export const PLANET_KINDS = [
+  "rocky",
+  "gas-giant",
+  "ice",
+  "barren",
+  "oceanic",
+  "volcanic",
+];
 export const RESOURCE_KINDS = ["minerals", "energy", "credits", "research"];
 
 /** Szudzik pairing over signed integers: bijective (gx, gy) -> non-negative integer. */
@@ -30,7 +44,9 @@ export function unpairSectorCoords(index) {
 }
 
 function generatePlanet(seed, sectorIndex, systemIndex, planetIndex) {
-  const rand = createRng(`${seed}:planet:${sectorIndex}:${systemIndex}:${planetIndex}`);
+  const rand = createRng(
+    `${seed}:planet:${sectorIndex}:${systemIndex}:${planetIndex}`,
+  );
   return {
     id: `planet_${sectorIndex}_${systemIndex}_${planetIndex}`,
     kind: pick(rand, PLANET_KINDS),

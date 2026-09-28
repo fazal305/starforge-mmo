@@ -62,7 +62,10 @@ export class GameSocket {
   }
 
   scheduleReconnect() {
-    const delay = Math.min(RECONNECT_BASE_DELAY_MS * 2 ** this.attempt, RECONNECT_MAX_DELAY_MS);
+    const delay = Math.min(
+      RECONNECT_BASE_DELAY_MS * 2 ** this.attempt,
+      RECONNECT_MAX_DELAY_MS,
+    );
     this.attempt += 1;
     setTimeout(() => {
       if (!this.closedByUser) this.connect();

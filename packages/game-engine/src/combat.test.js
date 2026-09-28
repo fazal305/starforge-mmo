@@ -11,8 +11,18 @@ const fixedRng = () => 0.5; // variance() always resolves to exactly 1 with this
 
 describe("resolveCombat", () => {
   it("is deterministic for a fixed rng", () => {
-    const a = resolveCombat([{ hullType: "destroyer", count: 3 }], [{ hullType: "scout", count: 5 }], SHIP_STATS, { rng: fixedRng });
-    const b = resolveCombat([{ hullType: "destroyer", count: 3 }], [{ hullType: "scout", count: 5 }], SHIP_STATS, { rng: fixedRng });
+    const a = resolveCombat(
+      [{ hullType: "destroyer", count: 3 }],
+      [{ hullType: "scout", count: 5 }],
+      SHIP_STATS,
+      { rng: fixedRng },
+    );
+    const b = resolveCombat(
+      [{ hullType: "destroyer", count: 3 }],
+      [{ hullType: "scout", count: 5 }],
+      SHIP_STATS,
+      { rng: fixedRng },
+    );
     expect(a).toEqual(b);
   });
 
@@ -47,19 +57,32 @@ describe("resolveCombat", () => {
       SHIP_STATS,
       { rng: () => Math.random() },
     );
-    for (const s of [...result.attackerSurvivors, ...result.defenderSurvivors]) {
+    for (const s of [
+      ...result.attackerSurvivors,
+      ...result.defenderSurvivors,
+    ]) {
       expect(s.count).toBeGreaterThan(0);
       expect(Number.isInteger(s.count)).toBe(true);
     }
   });
 
   it("produces a non-empty round-by-round log", () => {
-    const result = resolveCombat([{ hullType: "scout", count: 1 }], [{ hullType: "scout", count: 1 }], SHIP_STATS, { rng: fixedRng });
+    const result = resolveCombat(
+      [{ hullType: "scout", count: 1 }],
+      [{ hullType: "scout", count: 1 }],
+      SHIP_STATS,
+      { rng: fixedRng },
+    );
     expect(result.log.length).toBeGreaterThan(2);
   });
 
   it("ignores ship types with no known stats rather than crashing", () => {
-    const result = resolveCombat([{ hullType: "unknown-experimental", count: 3 }], [{ hullType: "scout", count: 1 }], SHIP_STATS, { rng: fixedRng });
+    const result = resolveCombat(
+      [{ hullType: "unknown-experimental", count: 3 }],
+      [{ hullType: "scout", count: 1 }],
+      SHIP_STATS,
+      { rng: fixedRng },
+    );
     expect(result.winner).toBe("defender");
   });
 });

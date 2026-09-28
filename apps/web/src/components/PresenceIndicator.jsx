@@ -16,7 +16,15 @@ export default function PresenceIndicator() {
         color: "var(--color-text-secondary)",
       }}
     >
-      <span aria-hidden style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-success)" }} />
+      <span
+        aria-hidden
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          background: "var(--color-success)",
+        }}
+      />
       {usernames.length} online
     </span>
   );

@@ -4,7 +4,12 @@ import { STARTING_RESOURCES } from "@starforge/shared";
 import { eq } from "drizzle-orm";
 
 const EMPIRE_COLORS = ["#4da8ff", "#e2554a", "#3fbf7f", "#d9a441", "#b479e0"];
-const FACTIONS = ["Sol Directorate", "Void Concord", "Free Traders", "Ashen Pact"];
+const FACTIONS = [
+  "Sol Directorate",
+  "Void Concord",
+  "Free Traders",
+  "Ashen Pact",
+];
 
 function pick(options) {
   return options[Math.floor(Math.random() * options.length)];
@@ -30,7 +35,11 @@ export async function createDefaultEmpire(userId, username) {
 }
 
 export async function getEmpireByUserId(userId) {
-  const [empire] = await db.select().from(empires).where(eq(empires.userId, userId)).limit(1);
+  const [empire] = await db
+    .select()
+    .from(empires)
+    .where(eq(empires.userId, userId))
+    .limit(1);
   return empire ?? null;
 }
 

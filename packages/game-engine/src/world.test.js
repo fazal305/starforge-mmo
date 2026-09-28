@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { generateSector, pairSectorCoords, unpairSectorCoords, resolveSystemById, resolveSystemByPlanetId } from "./world.js";
+import {
+  generateSector,
+  pairSectorCoords,
+  unpairSectorCoords,
+  resolveSystemById,
+  resolveSystemByPlanetId,
+} from "./world.js";
 
 describe("generateSector", () => {
   it("is deterministic for the same seed and coordinates", () => {
@@ -17,7 +23,9 @@ describe("generateSector", () => {
   it("gives every system a stable, sector-scoped id", () => {
     const sector = generateSector("STARFORGE-001", 0, 0);
     for (const system of sector.systems) {
-      expect(system.id.startsWith(`system_${pairSectorCoords(0, 0)}_`)).toBe(true);
+      expect(system.id.startsWith(`system_${pairSectorCoords(0, 0)}_`)).toBe(
+        true,
+      );
     }
   });
 

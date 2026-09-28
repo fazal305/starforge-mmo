@@ -16,7 +16,11 @@ export default function BattleNotifications() {
   useEffect(() => {
     const latest = battles[0];
     if (!latest || latest.battleId === lastSeenBattleId.current) return;
-    if (latest.attackerEmpireId !== myEmpireId && latest.defenderEmpireId !== myEmpireId) return;
+    if (
+      latest.attackerEmpireId !== myEmpireId &&
+      latest.defenderEmpireId !== myEmpireId
+    )
+      return;
 
     lastSeenBattleId.current = latest.battleId;
     setVisible(latest);
@@ -30,7 +34,10 @@ export default function BattleNotifications() {
 
   const won = visible.winnerEmpireId === myEmpireId;
   const draw = visible.winnerEmpireId === null;
-  const opponentId = visible.attackerEmpireId === myEmpireId ? visible.defenderEmpireId : visible.attackerEmpireId;
+  const opponentId =
+    visible.attackerEmpireId === myEmpireId
+      ? visible.defenderEmpireId
+      : visible.attackerEmpireId;
   const opponentName = empires[opponentId]?.name ?? "an unknown empire";
 
   return (
@@ -52,10 +59,23 @@ export default function BattleNotifications() {
         zIndex: 10,
       }}
     >
-      <strong style={{ color: draw ? "var(--color-warning)" : won ? "var(--color-success)" : "var(--color-danger)" }}>
+      <strong
+        style={{
+          color: draw
+            ? "var(--color-warning)"
+            : won
+              ? "var(--color-success)"
+              : "var(--color-danger)",
+        }}
+      >
         {draw ? "Mutual destruction" : won ? "Victory" : "Defeat"}
       </strong>
-      <div style={{ marginTop: "var(--space-1)", color: "var(--color-text-secondary)" }}>
+      <div
+        style={{
+          marginTop: "var(--space-1)",
+          color: "var(--color-text-secondary)",
+        }}
+      >
         Engagement with {opponentName}
       </div>
     </div>

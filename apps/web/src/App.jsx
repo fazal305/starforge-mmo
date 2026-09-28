@@ -8,7 +8,11 @@ import { useWorldStore } from "./stores/worldStore";
 import { usePresenceStore } from "./stores/presenceStore";
 import { useChatStore } from "./stores/chatStore";
 import { useBattleStore } from "./stores/battleStore";
-import { fetchEmpire, fetchUniverseActive, logout as logoutRequest } from "./services/api";
+import {
+  fetchEmpire,
+  fetchUniverseActive,
+  logout as logoutRequest,
+} from "./services/api";
 import { useGameSession } from "./hooks/useGameSession";
 import UniverseMap from "./components/UniverseMap";
 import AuthScreen from "./components/AuthScreen";
@@ -27,7 +31,11 @@ import { useAudioStore } from "./stores/audioStore";
 
 function ConnectionBadge() {
   const status = useConnectionStore((s) => s.status);
-  const label = { CONNECTED: "Connected", RECONNECTING: "Reconnecting…", OFFLINE: "Offline" }[status];
+  const label = {
+    CONNECTED: "Connected",
+    RECONNECTING: "Reconnecting…",
+    OFFLINE: "Offline",
+  }[status];
   const color =
     status === "CONNECTED"
       ? "var(--color-success)"
@@ -50,7 +58,13 @@ function ConnectionBadge() {
     >
       <span
         aria-hidden
-        style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block" }}
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: color,
+          display: "inline-block",
+        }}
       />
       {label}
     </span>
@@ -104,7 +118,10 @@ function GameShell() {
   const loadSnapshot = useCallback(() => {
     Promise.all([fetchEmpire(), fetchUniverseActive()])
       .then(([empireData, universeData]) => {
-        hydrateEmpire({ empire: empireData.empire, research: empireData.research });
+        hydrateEmpire({
+          empire: empireData.empire,
+          research: empireData.research,
+        });
         hydrateWorld(universeData);
       })
       .catch((err) => console.error("Failed to load game state:", err.message));
@@ -133,11 +150,20 @@ function GameShell() {
     // Clears the httpOnly session cookie server-side. Best-effort: the
     // client-side state is already reset above regardless of whether this
     // request succeeds, since the user has no way to retry a failed logout.
-    logoutRequest().catch((err) => console.error("Failed to clear session cookie:", err.message));
+    logoutRequest().catch((err) =>
+      console.error("Failed to clear session cookie:", err.message),
+    );
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", fontFamily: "var(--font-display)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        fontFamily: "var(--font-display)",
+      }}
+    >
       <header
         style={{
           display: "flex",
@@ -150,9 +176,18 @@ function GameShell() {
           flexWrap: isMobile ? "wrap" : "nowrap",
         }}
       >
-        <strong style={{ letterSpacing: "0.08em", flexShrink: 0 }}>STARFORGE</strong>
+        <strong style={{ letterSpacing: "0.08em", flexShrink: 0 }}>
+          STARFORGE
+        </strong>
         {!isMobile && <EmpireBar />}
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-4)", flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--space-4)",
+            flexShrink: 0,
+          }}
+        >
           {!isMobile && (
             <button
               type="button"
@@ -212,8 +247,13 @@ function GameShell() {
         </div>
         {isMobile && <EmpireBar />}
       </header>
-      <div style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}>
-        <UniverseMap debugOverlayVisible={debugOverlayVisible} send={sendWithSound} />
+      <div
+        style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}
+      >
+        <UniverseMap
+          debugOverlayVisible={debugOverlayVisible}
+          send={sendWithSound}
+        />
         <BattleNotifications />
         <CommandErrorToast />
         <OnboardingHint />

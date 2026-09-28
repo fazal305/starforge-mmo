@@ -25,7 +25,12 @@ function computeFleetStats(ships, shipStatsByType) {
  * @param {Record<string, { attack: number, defense: number, hull: number }>} shipStatsByType
  * @param {{ maxRounds?: number, rng?: () => number }} [options] `rng` returns floats in [0, 1) — inject a fixed one for deterministic tests.
  */
-export function resolveCombat(attackerShips, defenderShips, shipStatsByType, options = {}) {
+export function resolveCombat(
+  attackerShips,
+  defenderShips,
+  shipStatsByType,
+  options = {},
+) {
   const maxRounds = options.maxRounds ?? DEFAULT_MAX_ROUNDS;
   const rng = options.rng ?? Math.random;
 
@@ -42,11 +47,19 @@ export function resolveCombat(attackerShips, defenderShips, shipStatsByType, opt
   while (attacker.hull > 0 && defender.hull > 0 && round < maxRounds) {
     round++;
     const variance = () => 0.85 + rng() * 0.3; // ±15%, keeps outcomes from being purely deterministic by stats alone
-    const damageToDefender = Math.max(1, Math.round((attacker.attack - defender.defense * 0.5) * variance()));
-    const damageToAttacker = Math.max(1, Math.round((defender.attack - attacker.defense * 0.5) * variance()));
+    const damageToDefender = Math.max(
+      1,
+      Math.round((attacker.attack - defender.defense * 0.5) * variance()),
+    );
+    const damageToAttacker = Math.max(
+      1,
+      Math.round((defender.attack - attacker.defense * 0.5) * variance()),
+    );
     defender.hull -= damageToDefender;
     attacker.hull -= damageToAttacker;
-    log.push(`Round ${round}: attacker deals ${damageToDefender}, defender deals ${damageToAttacker}`);
+    log.push(
+      `Round ${round}: attacker deals ${damageToDefender}, defender deals ${damageToAttacker}`,
+    );
   }
 
   let winner;
@@ -62,15 +75,26 @@ export function resolveCombat(attackerShips, defenderShips, shipStatsByType, opt
   );
 
   const survivalRatio = (side) =>
-    winner === side || winner === "draw" ? Math.max(0, side === "attacker" ? attacker.hull : defender.hull) / Math.max(1, startingHull[side]) : 0;
+    winner === side || winner === "draw"
+      ? Math.max(0, side === "attacker" ? attacker.hull : defender.hull) /
+        Math.max(1, startingHull[side])
+      : 0;
 
   const applyCasualties = (ships, ratio) =>
-    ships.map((s) => ({ ...s, count: Math.floor(s.count * ratio) })).filter((s) => s.count > 0);
+    ships
+      .map((s) => ({ ...s, count: Math.floor(s.count * ratio) }))
+      .filter((s) => s.count > 0);
 
   return {
     winner, // "attacker" | "defender" | "draw"
     log,
-    attackerSurvivors: applyCasualties(attackerShips, survivalRatio("attacker")),
-    defenderSurvivors: applyCasualties(defenderShips, survivalRatio("defender")),
+    attackerSurvivors: applyCasualties(
+      attackerShips,
+      survivalRatio("attacker"),
+    ),
+    defenderSurvivors: applyCasualties(
+      defenderShips,
+      survivalRatio("defender"),
+    ),
   };
 }

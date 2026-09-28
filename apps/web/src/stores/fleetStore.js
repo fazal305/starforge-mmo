@@ -5,7 +5,8 @@ export const useFleetStore = create((set) => ({
   selectedFleetId: null,
   awaitingMoveOrder: false,
 
-  selectFleet: (fleetId) => set({ selectedFleetId: fleetId, awaitingMoveOrder: false }),
+  selectFleet: (fleetId) =>
+    set({ selectedFleetId: fleetId, awaitingMoveOrder: false }),
   beginMoveOrder: () => set({ awaitingMoveOrder: true }),
   cancelMoveOrder: () => set({ awaitingMoveOrder: false }),
 
@@ -14,10 +15,18 @@ export const useFleetStore = create((set) => ({
 
 /** Interpolated render position for a fleet at time `now` — never the raw server snapshot for a moving fleet. */
 export function interpolateFleetPosition(fleet, now) {
-  if (fleet.status !== "MOVING" || !fleet.destination || !fleet.departedAt || !fleet.etaMs) {
+  if (
+    fleet.status !== "MOVING" ||
+    !fleet.destination ||
+    !fleet.departedAt ||
+    !fleet.etaMs
+  ) {
     return fleet.position;
   }
-  const progress = Math.min(1, Math.max(0, (now - fleet.departedAt) / fleet.etaMs));
+  const progress = Math.min(
+    1,
+    Math.max(0, (now - fleet.departedAt) / fleet.etaMs),
+  );
   return {
     x: fleet.position.x + (fleet.destination.x - fleet.position.x) * progress,
     y: fleet.position.y + (fleet.destination.y - fleet.position.y) * progress,

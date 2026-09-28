@@ -3,7 +3,9 @@ import { useState } from "react";
 const STORAGE_KEY = "starforge:onboarded";
 
 export default function OnboardingHint() {
-  const [dismissed, setDismissed] = useState(() => localStorage.getItem(STORAGE_KEY) === "true");
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem(STORAGE_KEY) === "true",
+  );
 
   if (dismissed) return null;
 
@@ -31,12 +33,20 @@ export default function OnboardingHint() {
         zIndex: 5,
       }}
     >
-      <strong style={{ display: "block", marginBottom: "var(--space-2)", color: "var(--color-text-primary)", fontFamily: "var(--font-display)" }}>
+      <strong
+        style={{
+          display: "block",
+          marginBottom: "var(--space-2)",
+          color: "var(--color-text-primary)",
+          fontFamily: "var(--font-display)",
+        }}
+      >
         Welcome, commander
       </strong>
       <p style={{ margin: 0, marginBottom: "var(--space-2)" }}>
-        Click a star to select it, then found a colony. Build a shipyard to construct ships, and select a fleet
-        to move or attack a rival within range.
+        Click a star to select it, then found a colony. Build a shipyard to
+        construct ships, and select a fleet to move or attack a rival within
+        range.
       </p>
       <button
         type="button"

@@ -32,7 +32,11 @@ export const fleetUpdatedEventSchema = envelope(
     status: z.enum(["IDLE", "MOVING", "COMBAT", "DESTROYED"]),
     // Present on creation (composition is new information); omitted on move/arrival
     // updates, where the client already knows its own fleet's ships.
-    ships: z.array(z.object({ id: z.string(), hullType: z.string(), count: z.number() })).optional(),
+    ships: z
+      .array(
+        z.object({ id: z.string(), hullType: z.string(), count: z.number() }),
+      )
+      .optional(),
   }),
 );
 
@@ -57,16 +61,34 @@ export const combatResolvedEventSchema = envelope(
 
 export const chatMessageEventSchema = envelope(
   "CHAT_MESSAGE",
-  z.object({ channel: z.string(), from: z.string(), text: z.string(), sentAt: z.number() }),
+  z.object({
+    channel: z.string(),
+    from: z.string(),
+    text: z.string(),
+    sentAt: z.number(),
+  }),
 );
 
-const playerPresencePayloadSchema = z.object({ playerId: z.string(), username: z.string() });
-export const playerJoinedEventSchema = envelope("PLAYER_JOINED", playerPresencePayloadSchema);
-export const playerLeftEventSchema = envelope("PLAYER_LEFT", playerPresencePayloadSchema);
+const playerPresencePayloadSchema = z.object({
+  playerId: z.string(),
+  username: z.string(),
+});
+export const playerJoinedEventSchema = envelope(
+  "PLAYER_JOINED",
+  playerPresencePayloadSchema,
+);
+export const playerLeftEventSchema = envelope(
+  "PLAYER_LEFT",
+  playerPresencePayloadSchema,
+);
 
 export const commandAckEventSchema = envelope(
   "COMMAND_ACK",
-  z.object({ commandId: z.string(), ok: z.boolean(), error: z.string().optional() }),
+  z.object({
+    commandId: z.string(),
+    ok: z.boolean(),
+    error: z.string().optional(),
+  }),
 );
 
 export const empireUpdatedEventSchema = envelope(

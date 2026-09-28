@@ -6,5 +6,6 @@ export const useUniverseStore = create((set) => ({
   debugOverlayVisible: false,
   setSelectedSystem: (system) => set({ selectedSystem: system }),
   setHoveredSystem: (systemId) => set({ hoveredSystemId: systemId }),
-  toggleDebugOverlay: () => set((s) => ({ debugOverlayVisible: !s.debugOverlayVisible })),
+  toggleDebugOverlay: () =>
+    set((s) => ({ debugOverlayVisible: !s.debugOverlayVisible })),
 }));

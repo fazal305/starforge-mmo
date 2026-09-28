@@ -21,12 +21,22 @@ export default function ResearchPanel({ send }) {
   return (
     <div>
       <h2 style={panelHeading}>Research</h2>
-      <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+      <ul
+        style={{
+          listStyle: "none",
+          margin: 0,
+          padding: 0,
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--space-2)",
+        }}
+      >
         {RESEARCH_CATALOG.map((tech) => {
           const progress = byId.get(tech.id);
           const unlocked = Boolean(progress?.unlockedAt);
           const inProgress = progress && !unlocked;
-          const prereqMet = !tech.prerequisiteId || byId.get(tech.prerequisiteId)?.unlockedAt;
+          const prereqMet =
+            !tech.prerequisiteId || byId.get(tech.prerequisiteId)?.unlockedAt;
 
           return (
             <li
@@ -36,13 +46,18 @@ export default function ResearchPanel({ send }) {
                 justifyContent: "space-between",
                 alignItems: "center",
                 fontSize: "var(--font-size-xs)",
-                color: prereqMet ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
+                color: prereqMet
+                  ? "var(--color-text-primary)"
+                  : "var(--color-text-tertiary)",
                 fontFamily: "var(--font-mono)",
               }}
             >
               <span>
                 {tech.name}
-                <span style={{ color: "var(--color-text-secondary)" }}> ({tech.costResearchPoints} RP)</span>
+                <span style={{ color: "var(--color-text-secondary)" }}>
+                  {" "}
+                  ({tech.costResearchPoints} RP)
+                </span>
               </span>
               {unlocked ? (
                 <span style={{ color: "var(--color-success)" }}>✓</span>
@@ -57,7 +72,9 @@ export default function ResearchPanel({ send }) {
                   style={{
                     background: "transparent",
                     border: "1px solid var(--color-border-strong)",
-                    color: prereqMet ? "var(--color-accent)" : "var(--color-text-tertiary)",
+                    color: prereqMet
+                      ? "var(--color-accent)"
+                      : "var(--color-text-tertiary)",
                     borderRadius: "var(--radius-sm)",
                     padding: "2px var(--space-2)",
                     cursor: prereqMet && connected ? "pointer" : "not-allowed",

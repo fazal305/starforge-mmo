@@ -16,7 +16,9 @@ async function applySurvivors(fleetId, survivors) {
   }
   const rows = await db
     .insert(ships)
-    .values(survivors.map((s) => ({ fleetId, hullType: s.hullType, count: s.count })))
+    .values(
+      survivors.map((s) => ({ fleetId, hullType: s.hullType, count: s.count })),
+    )
     .returning();
   await db.update(fleets).set({ status: "IDLE" }).where(eq(fleets.id, fleetId));
   return rows.map((r) => ({ id: r.id, hullType: r.hullType, count: r.count }));
@@ -33,23 +35,48 @@ export async function handleAttackFleet(userId, payload) {
   const [attackerFleet] = await db
     .select()
     .from(fleets)
-    .where(and(eq(fleets.id, payload.attackerFleetId), eq(fleets.empireId, empire.id)))
+    .where(
+      and(
+        eq(fleets.id, payload.attackerFleetId),
+        eq(fleets.empireId, empire.id),
+      ),
+    )
     .limit(1);
-  if (!attackerFleet) return { ok: false, error: "Attacking fleet not found or not owned by you" };
-  if (attackerFleet.status !== "IDLE") return { ok: false, error: "Attacking fleet must be idle" };
+  if (!attackerFleet)
+    return {
+      ok: false,
+      error: "Attacking fleet not found or not owned by you",
+    };
+  if (attackerFleet.status !== "IDLE")
+    return { ok: false, error: "Attacking fleet must be idle" };
 
-  const [defenderFleet] = await db.select().from(fleets).where(eq(fleets.id, payload.targetFleetId)).limit(1);
+  const [defenderFleet] = await db
+    .select()
+    .from(fleets)
+    .where(eq(fleets.id, payload.targetFleetId))
+    .limit(1);
   if (!defenderFleet) return { ok: false, error: "Target fleet not found" };
-  if (defenderFleet.empireId === empire.id) return { ok: false, error: "Cannot attack your own fleet" };
-  if (defenderFleet.status !== "IDLE") return { ok: false, error: "Target fleet is not engageable right now" };
+  if (defenderFleet.empireId === empire.id)
+    return { ok: false, error: "Cannot attack your own fleet" };
+  if (defenderFleet.status !== "IDLE")
+    return { ok: false, error: "Target fleet is not engageable right now" };
 
-  const distance = Math.hypot(attackerFleet.positionX - defenderFleet.positionX, attackerFleet.positionY - defenderFleet.positionY);
+  const distance = Math.hypot(
+    attackerFleet.positionX - defenderFleet.positionX,
+    attackerFleet.positionY - defenderFleet.positionY,
+  );
   if (distance > CO_LOCATION_TOLERANCE) {
     return { ok: false, error: "Target fleet is too far away to engage" };
   }
 
-  const attackerShips = await db.select().from(ships).where(eq(ships.fleetId, attackerFleet.id));
-  const defenderShips = await db.select().from(ships).where(eq(ships.fleetId, defenderFleet.id));
+  const attackerShips = await db
+    .select()
+    .from(ships)
+    .where(eq(ships.fleetId, attackerFleet.id));
+  const defenderShips = await db
+    .select()
+    .from(ships)
+    .where(eq(ships.fleetId, defenderFleet.id));
   if (attackerShips.length === 0 || defenderShips.length === 0) {
     return { ok: false, error: "One of the fleets has no ships" };
   }
@@ -60,17 +87,40 @@ export async function handleAttackFleet(userId, payload) {
     SHIP_TYPES,
   );
 
-  const winnerEmpireId = result.winner === "draw" ? null : result.winner === "attacker" ? attackerFleet.empireId : defenderFleet.empireId;
+  const winnerEmpireId =
+    result.winner === "draw"
+      ? null
+      : result.winner === "attacker"
+        ? attackerFleet.empireId
+        : defenderFleet.empireId;
 
   const [battle] = await db
     .insert(battles)
-    .values({ attackerFleetId: attackerFleet.id, defenderFleetId: defenderFleet.id, winnerEmpireId })
+    .values({
+      attackerFleetId: attackerFleet.id,
+      defenderFleetId: defenderFleet.id,
+      winnerEmpireId,
+    })
     .returning();
 
-  await db.insert(battleLogs).values(result.log.map((message, i) => ({ battleId: battle.id, sequence: i, message })));
+  await db
+    .insert(battleLogs)
+    .values(
+      result.log.map((message, i) => ({
+        battleId: battle.id,
+        sequence: i,
+        message,
+      })),
+    );
 
-  const attackerSurvivorShips = await applySurvivors(attackerFleet.id, result.attackerSurvivors);
-  const defenderSurvivorShips = await applySurvivors(defenderFleet.id, result.defenderSurvivors);
+  const attackerSurvivorShips = await applySurvivors(
+    attackerFleet.id,
+    result.attackerSurvivors,
+  );
+  const defenderSurvivorShips = await applySurvivors(
+    defenderFleet.id,
+    result.defenderSurvivors,
+  );
 
   const now = Date.now();
   const events = [
