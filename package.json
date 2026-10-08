@@ -2,6 +2,7 @@
   "name": "starforge-mmo",
   "private": true,
   "version": "0.0.1",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "description": "STARFORGE — real-time multiplayer space strategy MMO",
   "engines": {
     "node": ">=20"

@@ -221,3 +221,11 @@ is ever rendered, regardless of universe size.
 - **Errors**: a top-level error boundary shows a recovery screen instead
   of a blank crash; a dismissible onboarding hint walks new players
   through the core loop once.
+
+## License
+
+Free for personal, educational, and noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+
+Commercial use requires a paid commercial license. Contact fazalabbas2002@gmail.com.
+
+Versions up to and including `v0.0.1-mit` were released under the MIT License and remain available under MIT.

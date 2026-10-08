@@ -1,6 +1,7 @@
 {
   "name": "@starforge/shared",
   "version": "0.0.1",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "private": true,
   "type": "module",
   "main": "./src/index.js",
